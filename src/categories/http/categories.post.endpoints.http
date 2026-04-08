@@ -1,0 +1,47 @@
+POST http://localhost:8000/categories
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1NTc4ODMxLCJleHAiOjE3NzU1ODI0MzEsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.GbV4UFPbYtRqBo5JA93p0Lw6Kvd-i9DdoXpPcz1gaow
+{
+    "name": "NEXT JS",
+    "slug": "next-js",
+    "type": "course",
+    "description": "Test Description for NEST JS",
+    "image": "http://localhost.com/images/whats-new-in-nestjs.jpg"
+}
+
+
+POST http://localhost:8000/categories/bulk
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1MzEwNTYxLCJleHAiOjE3NzUzMTQxNjEsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.egPmuxbdjzkGvD101jYx-UxMU0OPcdYvcMdZ9VetpX8
+{
+  "categories": [
+    {
+      "name": "NEXT JS1",
+      "slug": "next-js-10",
+      "type": "course",
+      "description": "Test Description for NEST JS",
+      "image": "http://localhost.com/images/whats-new-in-nestjs.jpg"
+    },
+    {
+      "name": "NEXT JS2",
+      "slug": "next-js-11",
+      "type": "course",
+      "description": "Test Description for NEST JS",
+      "image": "http://localhost.com/images/whats-new-in-nestjs.jpg"
+    },
+    {
+      "name": "NEXT JS3",
+      "slug": "next-js-12",
+      "type": "course",
+      "description": "Test Description for NEST JS",
+      "image": "http://localhost.com/images/whats-new-in-nestjs.jpg"
+    }
+  ]
+}
+
+
+POST http://localhost:8000/categories/bulk-delete
+Content-Type: application/json
+{
+    "ids": [21,22,23,24,25,26]
+}

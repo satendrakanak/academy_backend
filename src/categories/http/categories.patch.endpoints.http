@@ -1,0 +1,12 @@
+PATCH http://localhost:8000/categories/3
+Content-Type: application/json
+{
+    "name": "NEST JS",
+    "slug": "nest-js",
+    "type": "course",
+    "description": "Test Description for NEST JS",
+    "image": "http://localhost.com/images/whats-new-in-nestjs.jpg"
+}
+
+
+PATCH http://localhost:8000/categories/6/restore

@@ -1,0 +1,23 @@
+POST http://localhost:8000/auth/sign-in
+Content-Type: application/json
+{
+    "email": "john@doe.com",
+    "password": "Password@123"
+}
+
+
+POST http://localhost:8000/auth/sign-up
+Content-Type: application/json
+{
+    "firstName": "Shivaan",
+    "lastName": "Gangwar",
+    "email": "gangwarsatendra.kcmt@gmail.com",
+    "phoneNumber" : "+918979791676",
+    "password": "Password@123"
+}
+
+POST http://localhost:8000/auth/refresh-tokens
+Content-Type: application/json
+{
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImlhdCI6MTc3NTI0MTQyNywiZXhwIjoxNzc1MzI3ODI3LCJhdWQiOiJsb2NhbGhvc3Q6MzAwMCIsImlzcyI6ImxvY2FsaG9zdDozMDAwIn0.87ssEhQx3Zh9hc_Y-gqGkk5sLwVitZ350elZq1u5TnA"
+}

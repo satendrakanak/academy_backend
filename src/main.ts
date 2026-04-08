@@ -1,0 +1,47 @@
+import { NestFactory, Reflector } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  /* Configure Swagger */
+  const configService = app.get(ConfigService);
+
+  const appUrl = `${configService.get('appConfig.appUrl')}/${configService.get('appConfig.appPort')}`;
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Unitus Backend App API')
+    .setDescription(`Use the API base url ${appUrl}`)
+    .setTermsOfService(appUrl)
+    .setLicense('MIT', appUrl)
+    .addServer(appUrl)
+    .setVersion(configService.get('appConfig.apiVersion') as string)
+    .build();
+
+  const document = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api', app, document);
+
+  //Add useGlobal Interceptors
+
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
+
+  // enable CORS
+  app.enableCors();
+
+  await app.listen(process.env.APP_PORT ?? 8000);
+}
+bootstrap();

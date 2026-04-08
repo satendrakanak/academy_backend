@@ -1,0 +1,37 @@
+import * as Joi from 'joi';
+
+export default Joi.object({
+  NODE_ENV: Joi.string()
+    .valid('development', 'production', 'test', 'staging')
+    .default('development'),
+  APP_URL: Joi.string().required(),
+  APP_PORT: Joi.number().port().default(8000),
+  FRONT_END_URL: Joi.string().required(),
+  API_VERSION: Joi.string().required(),
+  DATABASE_HOST: Joi.string().required(),
+  DATABASE_PORT: Joi.number().port().default(5432),
+  DATABASE_USER: Joi.string().required(),
+  DATABASE_PASSWORD: Joi.string().required(),
+  DATABASE_NAME: Joi.string().required(),
+  DATABASE_SYNC: Joi.string().valid('true', 'false').default('false'),
+  DATABASE_AUTO_LOAD: Joi.string().valid('true', 'false').default('false'),
+  JWT_SECRET: Joi.string().required(),
+  JWT_TOKEN_AUDIENCE: Joi.string().required(),
+  JWT_TOKEN_ISSUER: Joi.string().required(),
+  JWT_ACCESS_TOKEN_TTL: Joi.number().default(3600),
+  JWT_REFRESH_TOKEN_TTL: Joi.number().default(86400),
+  AWS_PUBLIC_BUCKET_NAME: Joi.string().required(),
+  AWS_REGION: Joi.string().required(),
+  AWS_CLOUDFRONT_URL: Joi.string().required(),
+  AWS_ACCESS_KEY_ID: Joi.string().required(),
+  AWS_ACCESS_KEY_SECRET: Joi.string().required(),
+  SMTP_HOST: Joi.string().required(),
+  SMTP_PORT: Joi.number().port().default(2525),
+  SMTP_USER: Joi.string().required(),
+  SMTP_PASSWORD: Joi.string().required(),
+  SMTP_MAIL_ENCRYPTION: Joi.string().default('tls'),
+  SMTP_FROM_NAME: Joi.string().required(),
+  SMTP_FROM_EMAIL: Joi.string().required(),
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.number().port().default(6379),
+});

@@ -1,0 +1,11 @@
+PATCH http://localhost:8000/users/6
+Content-Type: application/json
+{
+    "firstName": "Shivaan",
+    "lastName": "Doe",
+    "email": "john@doe.com",
+    "phoneNumber" : "+918979791615"
+}
+
+
+PATCH http://localhost:8000/users/19/restore

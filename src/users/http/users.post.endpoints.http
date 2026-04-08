@@ -1,0 +1,63 @@
+POST http://localhost:8000/users
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1MjQ0NTU5LCJleHAiOjE3NzUyNDgxNTksImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.he9ZMU_dV7JEh9RgaiwUXCzjs7fpR50_p-75UL0wfXU
+{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john@doe.com",
+    "phoneNumber" : "+918979791615",
+    "password": "Password@123"
+}
+
+
+
+POST http://localhost:8000/users/bulk
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1MjQ0NTU5LCJleHAiOjE3NzUyNDgxNTksImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.he9ZMU_dV7JEh9RgaiwUXCzjs7fpR50_p-75UL0wfXU
+
+{
+    "users": [
+        {
+            "firstName": "John",
+            "lastName": "Doe",
+            "email": "john1@doe.com",
+            "phoneNumber" : "+918979791616",
+            "password": "Password@123"
+        },
+        {
+            "firstName": "Jane",
+            "lastName": "Doe",
+            "email": "jane@doe.com",
+            "phoneNumber" : "+918979791617",
+            "password": "Password@123"
+        },
+        {
+            "firstName": "Mark",
+            "lastName": "Doe",
+            "email": "mark@doe.com",
+            "phoneNumber" : "+918979791618",
+            "password": "Password@123"
+        },
+        {
+            "firstName": "Nonu",
+            "lastName": "Doe",
+            "email": "nonu@doe.com",
+            "phoneNumber" : "+918979791619",
+            "password": "Password@123"
+        },
+        {
+            "firstName": "Jenni",
+            "lastName": "Doe",
+            "email": "jenni@doe.com",
+            "phoneNumber" : "+918979791610",
+            "password": "Password@123"
+        }
+    ]
+}
+
+
+POST http://localhost:8000/users/bulk-delete
+Content-Type: application/json
+{
+    "ids": [16,17,19]
+}

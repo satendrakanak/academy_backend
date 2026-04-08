@@ -1,0 +1,11 @@
+POST http://localhost:8000/uploads/file
+Content-Type: multipart/form-data; boundary=WebKitFormBoundary
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1Mzc1NzU1LCJleHAiOjE3NzUzNzkzNTUsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.Vf7Ay3ESq3t2iiw35tNNqnTj6MUDXRyKc63JlC2ZdwQ
+
+file
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="test-image.png"
+Content-Type: image/jpg
+
+< ./test-image.png
+--WebKitFormBoundary--

@@ -1,0 +1,15 @@
+@name = ignore
+@email = ignore
+@loginUrl = ignore
+@year = ignore
+PATCH http://localhost:8000/email-templates/2
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1NDkyMTI3LCJleHAiOjE3NzU0OTU3MjcsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.BjpqUexfVLl0OobUmu3hBa-YkfB0POUGLT7lREqI4Vk
+{
+  "templateName": "welcome_email",
+  "subject": "🎉 Welcome to Unitus Academy, {{name}}!",
+  "body": "<!DOCTYPE html><html><head><meta charset='UTF-8'/><meta name='viewport' content='width=device-width, initial-scale=1.0'/></head><body style='margin:0;padding:0;background:#f4f6f8;font-family:Arial,sans-serif;'><table width='100%' cellpadding='0' cellspacing='0'><tr><td align='center'><table width='600' cellpadding='0' cellspacing='0' style='background:#ffffff;margin:20px;border-radius:8px;overflow:hidden;'><tr><td style='background:#1e3a8a;color:#ffffff;padding:20px;text-align:center;font-size:22px;font-weight:bold;'>🚀 Welcome to Unitus Academy</td></tr><tr><td style='padding:30px;color:#333;'><h2 style='margin-top:0;'>Hello {{name}}, 👋</h2><p style='font-size:14px;line-height:1.6;'>We’re excited to have you onboard! Your account has been successfully created.</p><p style='font-size:14px;line-height:1.6;'><strong>Email:</strong> {{email}}</p><p style='font-size:14px;line-height:1.6;'>You can now log in and start exploring all the amazing features we have built for you.</p><div style='text-align:center;margin:30px 0;'><a href='{{loginUrl}}' style='background:#2563eb;color:#fff;padding:12px 20px;border-radius:5px;text-decoration:none;font-size:14px;'>Go to Dashboard</a></div><p style='font-size:13px;color:#555;'>If you have any questions, feel free to reply to this email. We’re here to help!</p></td></tr><tr><td style='background:#f1f5f9;padding:15px;text-align:center;font-size:12px;color:#777;'>© {{year}} Unitus Academy. All rights reserved.</td></tr></table></td></tr></table></body></html>"
+}
+
+PATCH http://localhost:8000/email-templates/3/restore
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1NTY4NTk0LCJleHAiOjE3NzU1NzIxOTQsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.Jhw8CWIyCRVGU6tiTRkkOuNfUISwPps0cDL1xw-5Gis
