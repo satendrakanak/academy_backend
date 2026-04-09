@@ -18,6 +18,7 @@ import { DeleteBulkUsersDto } from '../dtos/delete-bulk-users.dto';
 import { RestoreUserProvider } from './restore-user.provider';
 import { DeleteUserProvider } from './delete-user.provider';
 import { MarkEmailVerifiedProvider } from './mark-email-verified.provider';
+import { UpdatePasswordProvider } from './update-password.provider';
 
 @Injectable()
 export class UsersService {
@@ -77,6 +78,12 @@ export class UsersService {
      */
 
     private readonly markEmailVerifiedProvider: MarkEmailVerifiedProvider,
+
+    /**
+     * Inject updatePasswordProvider
+     */
+
+    private readonly updatePasswordProvider: UpdatePasswordProvider,
   ) {}
 
   public async findAll(getUsersDto: GetUsersDto): Promise<Paginated<User>> {
@@ -131,5 +138,16 @@ export class UsersService {
 
   async markEmailVerified(userId: number): Promise<User> {
     return await this.markEmailVerifiedProvider.markEmailVerified(userId);
+  }
+  async updatePassword(
+    userId: number,
+    password: string,
+    confirmPassword: string,
+  ): Promise<User> {
+    return await this.updatePasswordProvider.updatePassword(
+      userId,
+      password,
+      confirmPassword,
+    );
   }
 }

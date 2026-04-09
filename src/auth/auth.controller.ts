@@ -1,23 +1,27 @@
 import {
   Body,
   Controller,
+  forwardRef,
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Post,
   Query,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { SignInDto } from './dtos/sign-in.dto';
 import { AuthService } from './providers/auth.service';
-import { RefreshTokenDto } from './dtos/refresh-token.dto';
 import { Auth } from './decorators/auth.decorator';
 import { AuthType } from './enums/auth-type.enum';
 import { SignupDto } from './dtos/sign-up.dto';
-import {
-  ApiResponse,
-  LoginResponse,
-} from 'src/common/interfaces/api-response.interface';
+import { ApiResponse } from 'src/common/interfaces/api-response.interface';
 import { User } from 'src/users/user.entity';
+import type { Response as ExpressResponse, Request } from 'express';
+import { cookieOptions } from './cookies/cookies-options';
+import { UsersService } from 'src/users/providers/users.service';
+import { ResetPasswordDto } from './dtos/reset-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -27,6 +31,13 @@ export class AuthController {
      */
 
     private readonly authService: AuthService,
+
+    /**
+     * Inject usersService
+     */
+
+    @Inject(forwardRef(() => UsersService))
+    private readonly usersService: UsersService,
   ) {}
 
   @Auth(AuthType.None)
@@ -34,13 +45,25 @@ export class AuthController {
   @Post('sign-in')
   public async signIn(
     @Body() signInDto: SignInDto,
-  ): Promise<ApiResponse<LoginResponse>> {
-    const result = await this.authService.signIn(signInDto);
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ): Promise<ApiResponse<null>> {
+    const { accessToken, refreshToken } =
+      await this.authService.signIn(signInDto);
+
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
     return {
       success: true,
       message: 'User logged in successfully',
-      data: result,
+      data: null,
     };
+  }
+
+  @Get('profile')
+  async getProfile(@Req() req) {
+    const userId = req.user.sub;
+    return await this.usersService.findOneById(userId);
   }
 
   @Auth(AuthType.None)
@@ -58,16 +81,59 @@ export class AuthController {
   }
 
   @Auth(AuthType.None)
+  @Post('sign-out')
+  @HttpCode(200)
+  logout(@Res({ passthrough: true }) res: ExpressResponse) {
+    // 🍪 clear cookies
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    return {
+      message: 'Logged out successfully',
+    };
+  }
+
+  @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @Post('refresh-tokens')
-  public async refreshTokens(@Body() refreshTokenDto: RefreshTokenDto) {
-    return await this.authService.refreshTokens(refreshTokenDto);
+  public async refreshTokens(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const oldRefreshToken = req.cookies.refreshToken;
+    const { accessToken, refreshToken } =
+      await this.authService.refreshTokens(oldRefreshToken);
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+    return { success: true };
   }
 
   @Auth(AuthType.None)
   @HttpCode(HttpStatus.OK)
   @Get('verify-email')
-  async verifyEmail(@Query('token') token: string) {
-    return this.authService.verifyEmail(token);
+  async verifyEmail(
+    @Query('token') token: string,
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const { accessToken, refreshToken } =
+      await this.authService.verifyEmail(token);
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    return { success: true };
+  }
+
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body('email') email: string) {
+    return this.authService.forgotPassword(email);
+  }
+
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return await this.authService.resetPassword(resetPasswordDto);
   }
 }

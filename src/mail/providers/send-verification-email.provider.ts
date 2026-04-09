@@ -9,6 +9,7 @@ import { Queue } from 'bullmq';
 import { EmailTemplatesService } from 'src/email-templates/providers/email-templates.service';
 import { User } from 'src/users/user.entity';
 import { parseTemplate } from '../utils/template-parser';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SendVerificationEmailProvider {
@@ -24,10 +25,15 @@ export class SendVerificationEmailProvider {
 
     @InjectQueue('mail')
     private readonly mailQueue: Queue,
+    /**
+     * Inject configService
+     */
+
+    private readonly configService: ConfigService,
   ) {}
   async sendVerificationEmail(
     user: User,
-    link: string,
+    token: string,
     expiresAt: Date,
   ): Promise<void> {
     const template =
@@ -35,6 +41,7 @@ export class SendVerificationEmailProvider {
     if (!template) {
       throw new NotFoundException('Verification email template not found');
     }
+    const link = `${this.configService.get<string>('appConfig.fronEndUrl')}/auth/verify-email?token=${token}`;
     const diffMs = expiresAt.getTime() - Date.now();
     const minutes = Math.floor(diffMs / 1000 / 60);
 

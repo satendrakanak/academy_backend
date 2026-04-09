@@ -5,6 +5,8 @@ import { Queue } from 'bullmq';
 import { User } from 'src/users/user.entity';
 import { SendWelcomeEmailProvider } from './send-welcome-email.provider';
 import { SendVerificationEmailProvider } from './send-verification-email.provider';
+import { SendForgotPasswordEmailProvider } from './send-forgot-password-email.provider';
+import { SendResetPasswordEmailProvider } from './send-reset-password-email.provider';
 
 @Injectable()
 export class MailService {
@@ -28,6 +30,15 @@ export class MailService {
      */
 
     private readonly sendVerificationEmailProvider: SendVerificationEmailProvider,
+    /**
+     * Inject sendForgotPasswordEmailProvider
+     */
+    private readonly sendForgotPasswordEmailProvider: SendForgotPasswordEmailProvider,
+
+    /**
+     * Inject sendResetPasswordEmailProvider
+     */
+    private readonly sendResetPasswordEmailProvider: SendResetPasswordEmailProvider,
   ) {}
 
   async sendMail(data: SendEmailJobData): Promise<void> {
@@ -54,13 +65,22 @@ export class MailService {
   }
   async sendVerificationEmail(
     user: User,
-    link: string,
+    token: string,
     expiresAt: Date,
   ): Promise<void> {
     await this.sendVerificationEmailProvider.sendVerificationEmail(
       user,
-      link,
+      token,
       expiresAt,
     );
+  }
+  async sendForgotPasswordEmail(user: User, token: string): Promise<void> {
+    await this.sendForgotPasswordEmailProvider.sendForgotPasswordEmail(
+      user,
+      token,
+    );
+  }
+  async sendResetPasswordEmail(user: User): Promise<void> {
+    await this.sendResetPasswordEmailProvider.sendResetPasswordEmail(user);
   }
 }

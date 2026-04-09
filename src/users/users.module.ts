@@ -18,6 +18,7 @@ import { UpdateUserProvider } from './providers/update-user.provider';
 import { RestoreUserProvider } from './providers/restore-user.provider';
 import { DeleteUserProvider } from './providers/delete-user.provider';
 import { MarkEmailVerifiedProvider } from './providers/mark-email-verified.provider';
+import { UpdatePasswordProvider } from './providers/update-password.provider';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MarkEmailVerifiedProvider } from './providers/mark-email-verified.provi
     RestoreUserProvider,
     DeleteUserProvider,
     MarkEmailVerifiedProvider,
+    UpdatePasswordProvider,
   ],
   exports: [UsersService],
 })

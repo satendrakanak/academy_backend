@@ -15,6 +15,8 @@ import { VerificationToken } from './verification-token.entity';
 import { GenerateVerificationTokenProvider } from './providers/generate-verification-token.provider';
 import { VerifyEmailProvider } from './providers/verify-email.provider';
 import { VerificationTokenService } from './providers/verification-token.service';
+import { ForgotPasswordProvider } from './providers/forgot-password.provider';
+import { ResetPasswordProvider } from './providers/reset-password.provider';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { VerificationTokenService } from './providers/verification-token.service
     GenerateVerificationTokenProvider,
     VerifyEmailProvider,
     VerificationTokenService,
+    ForgotPasswordProvider,
+    ResetPasswordProvider,
   ],
   exports: [AuthService, HashingProvider],
 })

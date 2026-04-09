@@ -66,7 +66,6 @@ export class EmailTemplatesService {
     return emailTemplate;
   }
   public async getByName(name: string): Promise<EmailTemplate> {
-    console.log('Main yahan AAya');
     const emailTemplate = await this.emailTemplateRepository.findOne({
       where: { templateName: name },
     });
