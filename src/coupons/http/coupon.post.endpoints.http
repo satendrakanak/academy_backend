@@ -1,0 +1,88 @@
+### Base URL
+@baseUrl = http://localhost:8000
+
+############################################
+### 1. CREATE COUPON (ADMIN)
+POST http://localhost:8000/coupons
+Content-Type: application/json
+
+{
+  "code": "SAVE50",
+  "type": "PERCENTAGE",
+  "value": 50,
+  "maxDiscount": 500,
+  "minOrderValue": 1000,
+  "scope": "GLOBAL",
+  "isAutoApply": false,
+  "usageLimit": 100,
+  "perUserLimit": 1,
+  "validFrom": "2026-04-25T00:00:00.000Z",
+  "validTill": "2026-05-01T23:59:59.000Z"
+}
+
+############################################
+### 2. CREATE FIXED COUPON
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "FLAT200",
+  "type": "FIXED",
+  "value": 200,
+  "minOrderValue": 500,
+  "scope": "GLOBAL",
+  "isAutoApply": false,
+  "usageLimit": 50,
+  "perUserLimit": 1,
+  "validFrom": "2026-04-25T00:00:00.000Z",
+  "validTill": "2026-05-10T23:59:59.000Z"
+}
+
+############################################
+### 3. CREATE AUTO APPLY COUPON
+POST {{baseUrl}}/coupons
+Content-Type: application/json
+
+{
+  "code": "AUTO10",
+  "type": "PERCENTAGE",
+  "value": 10,
+  "maxDiscount": 300,
+  "scope": "GLOBAL",
+  "isAutoApply": true,
+  "usageLimit": 1000,
+  "perUserLimit": 5,
+  "validFrom": "2026-04-25T00:00:00.000Z",
+  "validTill": "2026-06-01T23:59:59.000Z"
+}
+
+############################################
+### 4. APPLY COUPON
+POST {{baseUrl}}/coupons/apply
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "code": "SAVE50",
+  "cartTotal": 2000,
+  "courseIds": ["course1", "course2"]
+}
+
+############################################
+### 5. AUTO APPLY COUPON
+POST {{baseUrl}}/coupons/auto-apply
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "cartTotal": 2000,
+  "courseIds": ["course1", "course2"]
+}
+
+############################################
+### 6. GET ALL COUPONS (ADMIN)
+GET {{baseUrl}}/coupons
+
+############################################
+### 7. GET SINGLE COUPON
+GET {{baseUrl}}/coupons/SAVE50

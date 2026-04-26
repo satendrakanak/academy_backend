@@ -34,4 +34,5 @@ export default Joi.object({
   SMTP_FROM_EMAIL: Joi.string().required(),
   REDIS_HOST: Joi.string().required(),
   REDIS_PORT: Joi.number().port().default(6379),
+  APP_ENCRYPTION_KEY: Joi.string().required(),
 });

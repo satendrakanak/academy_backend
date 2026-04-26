@@ -30,10 +30,11 @@ export class AccessTokenGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     //Extract the request from the execution context
     const request = context.switchToHttp().getRequest();
+
     //Extract the token from the header
     const token = this.extractTokenFromRequest(request);
-    //validate the token
 
+    //validate the token
     if (!token) {
       throw new UnauthorizedException();
     }

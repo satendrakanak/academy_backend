@@ -7,31 +7,32 @@ import {
   Index,
   DeleteDateColumn,
   ManyToOne,
-  JoinColumn,
+  ManyToMany,
 } from 'typeorm';
 import { CategoryType } from './enums/categoryType.enum';
 import { User } from 'src/users/user.entity';
+import { Course } from 'src/courses/course.entity';
+import { Upload } from 'src/uploads/upload.entity';
 
 @Entity()
-//@Index(['slug', 'type'], { unique: true })
 @Index(['type'])
 export class Category {
   @PrimaryGeneratedColumn()
-  id: number;
+  id!: number;
 
   @Column({
     type: 'varchar',
     length: 96,
     nullable: false,
   })
-  name: string;
+  name!: string;
 
   @Column({
     type: 'varchar',
     length: 96,
     nullable: false,
   })
-  slug: string;
+  slug!: string;
 
   @Column({
     type: 'text',
@@ -39,28 +40,32 @@ export class Category {
   })
   description?: string;
 
-  @Column({
-    type: 'varchar',
-    length: 255,
-    nullable: true,
-  })
-  image?: string;
+  @ManyToOne(() => Upload, { nullable: true, onDelete: 'SET NULL' })
+  image?: Upload | null;
+
+  @Column({ type: 'varchar', length: 96, nullable: true })
+  imageAlt?: string;
 
   @Column({
     type: 'enum',
     enum: CategoryType,
     default: CategoryType.COURSE,
   })
-  type: CategoryType;
+  type!: CategoryType;
+
+  @ManyToMany(() => Course, (course) => course.categories, {
+    onDelete: 'CASCADE',
+  })
+  courses?: Course[];
 
   @ManyToOne(() => User, (user) => user.categories)
-  createdBy: User;
+  createdBy!: User;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn()
-  updatedAt: Date;
+  updatedAt!: Date;
 
   @DeleteDateColumn()
   deletedAt?: Date;

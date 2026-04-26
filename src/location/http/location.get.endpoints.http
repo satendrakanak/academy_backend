@@ -1,0 +1,18 @@
+### 🌍 Get All Countries
+GET http://localhost:8000/countries
+Content-Type: application/json
+
+
+### 🏙️ Get States of India (Assume India id = 102)
+GET http://localhost:8000/countries/102/states
+Content-Type: application/json
+
+
+### 🌆 Get Cities of Delhi (Assume Delhi state id = 1 or check DB)
+GET http://localhost:8000/states/1253/cities
+Content-Type: application/json
+
+
+### 🌳 Get Full Location Tree
+GET http://localhost:8000/locations/tree
+Content-Type: application/json

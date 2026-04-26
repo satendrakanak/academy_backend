@@ -1,8 +1,22 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CoursesService } from './providers/courses.service';
 import { CreateCourseDto } from './dtos/create-course.dto';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import type { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
+import { PatchCourseDto } from './dtos/patch-course.dto';
+import { Course } from './course.entity';
+import { GetCoursesDto } from './dtos/get-courses.dto';
+import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
 
 @Controller('courses')
 export class CoursesController {
@@ -14,11 +28,54 @@ export class CoursesController {
     private readonly coursesService: CoursesService,
   ) {}
 
+  @Get()
+  public async getCourses(
+    @Query() getCoursesDto: GetCoursesDto,
+    @ActiveUser() user: ActiveUserData,
+  ): Promise<Paginated<Course> | Course[]> {
+    return await this.coursesService.findAll(getCoursesDto, user);
+  }
+
+  @Get(':id')
+  public async getCourseById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Course> {
+    return await this.coursesService.findOneById(id);
+  }
+
+  @Get('slug/:slug')
+  public async getCourseBySlug(
+    @Param('slug') slug: string,
+    @ActiveUser() user: ActiveUserData,
+  ): Promise<Course> {
+    return await this.coursesService.findOneBySlug(slug, user);
+  }
+  @Get('learn/:slug/')
+  async getCourseForLearning(
+    @Param('slug') slug: string,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return this.coursesService.findCourseForLearning(slug, user);
+  }
   @Post()
   public async createCourse(
     @ActiveUser() user: ActiveUserData,
     @Body() createCourseDto: CreateCourseDto,
-  ) {
+  ): Promise<Course> {
     return await this.coursesService.create(createCourseDto, user);
+  }
+
+  @Patch(':id')
+  public async updateCourse(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() patchCourseDto: PatchCourseDto,
+    @ActiveUser() user: ActiveUserData,
+  ): Promise<Course> {
+    return await this.coursesService.update(id, patchCourseDto, user);
+  }
+
+  @Delete(':id')
+  public async deleteCourse(@Param('id', ParseIntPipe) id: number) {
+    return await this.coursesService.delete(id);
   }
 }

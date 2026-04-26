@@ -6,5 +6,5 @@ export class DeleteBulkCategoriesDto {
   @ArrayNotEmpty()
   @IsInt({ each: true })
   @Type(() => Number)
-  ids: number[];
+  ids!: number[];
 }

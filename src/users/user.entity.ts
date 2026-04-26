@@ -1,5 +1,10 @@
 import { Exclude } from 'class-transformer';
 import { Category } from 'src/categories/category.entity';
+import { Course } from 'src/courses/course.entity';
+import { Enrollment } from 'src/enrollments/enrollment.entity';
+import { Order } from 'src/orders/order.entity';
+import { Tag } from 'src/tags/tag.entity';
+import { UserProgres } from 'src/user-progress/user-progres.entity';
 import {
   Column,
   CreateDateColumn,
@@ -59,6 +64,21 @@ export class User {
 
   @OneToMany(() => Category, (category) => category.createdBy)
   categories!: Category[];
+
+  @OneToMany(() => Tag, (tag) => tag.createdBy)
+  tags!: Tag[];
+
+  @OneToMany(() => Course, (course) => course.createdBy)
+  courses!: Course[];
+
+  @OneToMany(() => UserProgres, (progress) => progress.user)
+  lectureProgress!: UserProgres[];
+
+  @OneToMany(() => Order, (order) => order.user)
+  orders!: Order[];
+
+  @OneToMany(() => Enrollment, (enrollment) => enrollment.user)
+  enrollments!: Enrollment[];
 
   @CreateDateColumn()
   createdAt!: Date;

@@ -19,7 +19,7 @@ import { SignupDto } from './dtos/sign-up.dto';
 import { ApiResponse } from 'src/common/interfaces/api-response.interface';
 import { User } from 'src/users/user.entity';
 import type { Response as ExpressResponse, Request } from 'express';
-import { cookieOptions } from './cookies/cookies-options';
+import { httpOnlyCookieOptions } from './cookies/cookies-options';
 import { UsersService } from 'src/users/providers/users.service';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 
@@ -49,9 +49,9 @@ export class AuthController {
   ): Promise<ApiResponse<null>> {
     const { accessToken, refreshToken } =
       await this.authService.signIn(signInDto);
-
-    res.cookie('accessToken', accessToken, cookieOptions);
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    console.log(accessToken, refreshToken);
+    res.cookie('accessToken', accessToken, httpOnlyCookieOptions);
+    res.cookie('refreshToken', refreshToken, httpOnlyCookieOptions);
 
     return {
       success: true,
@@ -103,8 +103,8 @@ export class AuthController {
     const oldRefreshToken = req.cookies.refreshToken;
     const { accessToken, refreshToken } =
       await this.authService.refreshTokens(oldRefreshToken);
-    res.cookie('accessToken', accessToken, cookieOptions);
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie('accessToken', accessToken, httpOnlyCookieOptions);
+    res.cookie('refreshToken', refreshToken, httpOnlyCookieOptions);
     return { success: true };
   }
 
@@ -117,8 +117,8 @@ export class AuthController {
   ) {
     const { accessToken, refreshToken } =
       await this.authService.verifyEmail(token);
-    res.cookie('accessToken', accessToken, cookieOptions);
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie('accessToken', accessToken, httpOnlyCookieOptions);
+    res.cookie('refreshToken', refreshToken, httpOnlyCookieOptions);
 
     return { success: true };
   }

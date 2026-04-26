@@ -4,9 +4,11 @@ import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use('/orders/webhook', express.raw({ type: '*/*' }));
   app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({

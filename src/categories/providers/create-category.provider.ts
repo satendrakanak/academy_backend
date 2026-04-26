@@ -45,16 +45,20 @@ export class CreateCategoryProvider {
         ...createCategoryDto,
         slug: finalSlug,
         createdBy: { id: user.sub } as User,
+        image: { id: createCategoryDto.imageId },
       });
       return await this.categoryRepository.save(category);
-    } catch (error) {
-      if (error.code === '23505') {
-        throw new BadRequestException('Slug already exists');
+    } catch (error: unknown) {
+      if (typeof error === 'object' && error && 'code' in error) {
+        if ((error as { code?: string }).code === '23505') {
+          throw new BadRequestException('Slug already exists');
+        }
       }
 
-      throw new InternalServerErrorException('Failed to create category', {
-        description: error.message,
-      });
+      throw new InternalServerErrorException(
+        'Failed to create category',
+        error instanceof Error ? { description: error.message } : undefined,
+      );
     }
   }
 }

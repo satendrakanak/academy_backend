@@ -3,20 +3,5 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjYsImVtYWlsIjoiam9obkBkb2UuY29tIiwiaWF0IjoxNzc1MzYzNDU1LCJleHAiOjE3NzUzNjcwNTUsImF1ZCI6ImxvY2FsaG9zdDozMDAwIiwiaXNzIjoibG9jYWxob3N0OjMwMDAifQ.uq2fKXhnnD39PDN3eu5spTfVdIQdZmowOU-vY9RxeXc
 {
     "title": "This is Very First Course",
-    "slug": "this-is-very-first-course",
-    "description": "This is the description",
-    "image": "http://localhost.com/images/whats-new-in-nestjs.jpg",
-    "priceInr": "2999",
-    "priceUsd": "29",
-    "duration": "2 Hours",
-    "mode": "Online",
-    "certificate": "Yes",
-    "exams": "Unitus Schedule",
-    "experienceLevel": "No Prior Experience",
-    "studyMaterial": "Unitus Provide",
-    "additionalBook": "Unitus Provide",
-    "language": "English/Hindi",
-    "technologyRequirements": "Laptop With Internet",
-    "eligibilityRequirements": "Graduation",
-    "disclaimer": "Any can do"
+    "slug": "this-is-very-first-course"
 }

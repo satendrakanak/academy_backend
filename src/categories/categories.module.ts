@@ -8,10 +8,22 @@ import { SlugModule } from 'src/common/slug/slug.module';
 import { PaginationModule } from 'src/common/pagination/pagination.module';
 import { CreateBulkCategoriesProvider } from './providers/create-bulk-categories.provider';
 import { CreateCategoryProvider } from './providers/create-category.provider';
+import { UploadsModule } from 'src/uploads/uploads.module';
 
 @Module({
-  imports: [PaginationModule, SlugModule, TypeOrmModule.forFeature([Category])],
+  imports: [
+    PaginationModule,
+    SlugModule,
+    TypeOrmModule.forFeature([Category]),
+    UploadsModule,
+  ],
   controllers: [CategoriesController],
-  providers: [CategoriesService, UpdateCategoryProvider, CreateBulkCategoriesProvider, CreateCategoryProvider],
+  providers: [
+    CategoriesService,
+    UpdateCategoryProvider,
+    CreateBulkCategoriesProvider,
+    CreateCategoryProvider,
+  ],
+  exports: [CategoriesService],
 })
 export class CategoriesModule {}
