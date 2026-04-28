@@ -14,6 +14,9 @@ import { MediaFileMappingService } from 'src/common/media-file-mapping/providers
 import { FindOneBySlugProvider } from './find-one-by-slug.provider';
 import { EnrollmentsService } from 'src/enrollments/providers/enrollments.service';
 import { UserProgressService } from 'src/user-progress/providers/user-progress.service';
+import { GetFeaturedCoursesProvider } from './get-featured-courses.provider';
+import { GetRelatedCoursesProvider } from './get-related-courses.provider';
+import { GetEnrolledCoursesProvider } from './get-enrolled-courses.provider';
 
 @Injectable()
 export class CoursesService {
@@ -60,6 +63,24 @@ export class CoursesService {
      * Inject userProgressService
      */
     private readonly userProgressService: UserProgressService,
+
+    /**
+     * Inject getFeaturedCoursesProvider
+     */
+
+    private readonly getFeaturedCoursesProvider: GetFeaturedCoursesProvider,
+
+    /**
+     * Inject getRelatedCoursesProvider
+     */
+
+    private readonly getRelatedCoursesProvider: GetRelatedCoursesProvider,
+
+    /**
+     * Inject getEnrolledCoursesProvider
+     */
+
+    private readonly getEnrolledCoursesProvider: GetEnrolledCoursesProvider,
   ) {}
 
   public async findAll(
@@ -80,6 +101,7 @@ export class CoursesService {
           'image',
           'video',
           'categories',
+          'faculties',
           'tags',
           'chapters',
           'chapters.lectures',
@@ -131,7 +153,7 @@ export class CoursesService {
       },
       this.courseRepository,
       {
-        relations: ['image', 'categories'],
+        relations: ['image', 'categories', 'tags', 'faculties'],
         order: {
           createdAt: 'DESC',
         },
@@ -152,6 +174,7 @@ export class CoursesService {
         'video',
         'categories',
         'tags',
+        'faculties',
         'chapters',
         'chapters.lectures',
         'chapters.lectures.video',
@@ -187,6 +210,24 @@ export class CoursesService {
 
   async findCourseForLearning(slug: string, user: ActiveUserData) {
     return await this.findOneBySlugProvider.getCourseForLearning(slug, user);
+  }
+
+  async getFeaturedCourses(user?: ActiveUserData) {
+    return await this.getFeaturedCoursesProvider.getFeaturedCourses(user);
+  }
+
+  async getRelatedCourses(courseId: number, user: ActiveUserData) {
+    return await this.getRelatedCoursesProvider.getRelatedCourses(
+      courseId,
+      user,
+    );
+  }
+
+  async getEnrolledCourses(userId: number, user?: ActiveUserData) {
+    return await this.getEnrolledCoursesProvider.getEnrolledCourses(
+      userId,
+      user,
+    );
   }
 
   public async create(createCouseDto: CreateCourseDto, user: ActiveUserData) {

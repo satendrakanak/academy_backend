@@ -17,6 +17,9 @@ import { FindAllCouponsProvider } from './find-all-coupons.provider';
 import { GetCouponsDto } from 'src/coupons/dtos/get-coupons.dto';
 import { PatchCouponDto } from '../dtos/patch-coupon.dto';
 import { UpdateCouponProvider } from './update-coupon.provider';
+import { ApplyCouponProvider } from './apply-coupon.provider';
+import { AutoApplyCouponProvider } from './auto-apply-coupon.provider';
+import { AutoApplyBulkCouponProvider } from './auto-apply-bulk-coupon.provider';
 
 @Injectable()
 export class CouponsService {
@@ -49,6 +52,23 @@ export class CouponsService {
      * Inject findAllCouponsProvider
      */
     private readonly findAllCouponsProvider: FindAllCouponsProvider,
+
+    /**
+     * Inject applyCouponProvider
+     */
+
+    private readonly applyCouponProvider: ApplyCouponProvider,
+
+    /**
+     * Inject autoApplyCouponProvider
+     */
+    private readonly autoApplyCouponProvider: AutoApplyCouponProvider,
+
+    /**
+     * Inject autoApplyBulkCouponProvider
+     */
+
+    private readonly autoApplyBulkCouponProvider: AutoApplyBulkCouponProvider,
   ) {}
 
   async findAll(getCouponsDto: GetCouponsDto) {
@@ -58,6 +78,16 @@ export class CouponsService {
   async findById(id: number): Promise<Coupon> {
     const coupon = await this.couponRepository.findOne({
       where: { id },
+    });
+    if (!coupon) {
+      throw new NotFoundException('Coupon not found');
+    }
+    return coupon;
+  }
+
+  async findByCode(code: string): Promise<Coupon> {
+    const coupon = await this.couponRepository.findOne({
+      where: { code },
     });
     if (!coupon) {
       throw new NotFoundException('Coupon not found');
@@ -84,110 +114,18 @@ export class CouponsService {
     };
   }
 
-  async apply(
+  async applyCoupon(
     userId: number,
     code: string,
     cartTotal: number,
     courseIds: number[],
   ) {
-    // 🔤 normalize
-    code = code.toUpperCase();
-
-    const coupon = await this.couponRepository.findOne({
-      where: { code },
-    });
-
-    if (!coupon) {
-      throw new BadRequestException('Invalid coupon code');
-    }
-
-    await this.validateCoupon(coupon, userId, cartTotal, courseIds);
-
-    const discount = this.calculateDiscount(coupon, cartTotal);
-
-    return {
-      couponId: coupon.id,
-      code: coupon.code,
-      discount,
-      finalAmount: cartTotal - discount,
-    };
-  }
-
-  private async validateCoupon(
-    coupon: Coupon,
-    userId: number,
-    cartTotal: number,
-    courseIds: number[],
-  ) {
-    const now = new Date();
-
-    // ❌ inactive
-    if (coupon.status !== CouponStatus.ACTIVE) {
-      throw new BadRequestException('Coupon is inactive');
-    }
-
-    // ❌ expired
-    if (now < coupon.validFrom! || now > coupon.validTill!) {
-      throw new BadRequestException('Coupon expired');
-    }
-
-    // ❌ usage limit
-    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-      throw new BadRequestException('Coupon usage limit reached');
-    }
-
-    // ❌ per user limit
-    const usedByUser = await this.couponUsageRepository.count({
-      where: {
-        user: { id: userId },
-        coupon: { id: coupon.id },
-      },
-    });
-
-    if (usedByUser >= coupon.perUserLimit) {
-      throw new BadRequestException('Coupon already used');
-    }
-
-    // ❌ min order
-    if (coupon.minOrderValue && cartTotal < Number(coupon.minOrderValue)) {
-      throw new BadRequestException(
-        `Minimum order value is ${coupon.minOrderValue}`,
-      );
-    }
-
-    // ❌ course validation
-    if (
-      coupon.scope === CouponScope.COURSE &&
-      coupon.applicableCourseIds?.length
-    ) {
-      const isValid = courseIds.some(
-        (id) =>
-          coupon.applicableCourseIds && coupon.applicableCourseIds.includes(id),
-      );
-
-      if (!isValid) {
-        throw new BadRequestException(
-          'Coupon not applicable on selected courses',
-        );
-      }
-    }
-  }
-
-  private calculateDiscount(coupon: Coupon, total: number): number {
-    let discount = 0;
-
-    if (coupon.type === CouponType.PERCENTAGE) {
-      discount = total * (Number(coupon.value) / 100);
-
-      if (coupon.maxDiscount) {
-        discount = Math.min(discount, Number(coupon.maxDiscount));
-      }
-    } else {
-      discount = Number(coupon.value);
-    }
-
-    // safety
-    return Math.min(discount, total);
+    return await this.applyCouponProvider.apply(
+      userId,
+      code,
+      cartTotal,
+      courseIds,
+    );
   }
 
   async autoApplyCoupon(
@@ -195,39 +133,53 @@ export class CouponsService {
     cartTotal: number,
     courseIds: number[],
   ) {
-    const coupons = await this.couponRepository.find({
-      where: {
-        isAutoApply: true,
-        status: CouponStatus.ACTIVE,
-      },
-    });
+    return await this.autoApplyCouponProvider.autoApplyCoupon(
+      userId,
+      cartTotal,
+      courseIds,
+    );
+  }
 
-    let best: Coupon | null = null;
-    let maxDiscount = 0;
+  async autoApplyBulk(
+    userId: number,
+    courses: { id: number; price: number }[],
+  ) {
+    return await this.autoApplyBulkCouponProvider.autoApplyBulk(
+      userId,
+      courses,
+    );
+  }
 
-    for (const coupon of coupons) {
-      try {
-        await this.validateCoupon(coupon, userId, cartTotal, courseIds);
+  async validateCoupon(
+    coupon: Coupon,
+    userId: number,
+    cartTotal: number,
+    courseIds: number[],
+  ) {
+    return await this.applyCouponProvider.validateCoupon(
+      coupon,
+      userId,
+      cartTotal,
+      courseIds,
+    );
+  }
 
-        const discount = this.calculateDiscount(coupon, cartTotal);
+  calculateDiscount(coupon: Coupon, total: number): number {
+    return this.applyCouponProvider.calculateDiscount(coupon, total);
+  }
 
-        if (discount > maxDiscount) {
-          maxDiscount = discount;
-          best = coupon;
-        }
-      } catch (e) {
-        // ignore invalid coupon
-      }
-    }
-
-    if (!best) return null;
-
-    return {
-      couponId: best.id,
-      code: best.code,
-      discount: maxDiscount,
-      finalAmount: cartTotal - maxDiscount,
-    };
+  async applyStackedCoupons(
+    userId: number,
+    cartTotal: number,
+    courseIds: number[],
+    manualCode?: string,
+  ) {
+    return await this.applyCouponProvider.applyStackedCoupons(
+      userId,
+      cartTotal,
+      courseIds,
+      manualCode,
+    );
   }
 
   async markCouponUsed(couponId: number, userId: number, order: Order) {

@@ -49,7 +49,6 @@ export class AuthController {
   ): Promise<ApiResponse<null>> {
     const { accessToken, refreshToken } =
       await this.authService.signIn(signInDto);
-    console.log(accessToken, refreshToken);
     res.cookie('accessToken', accessToken, httpOnlyCookieOptions);
     res.cookie('refreshToken', refreshToken, httpOnlyCookieOptions);
 

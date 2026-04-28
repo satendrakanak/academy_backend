@@ -56,6 +56,10 @@ export class FindOneBySlugProvider {
       .leftJoinAndSelect('course.video', 'video')
       .leftJoinAndSelect('course.categories', 'categories')
       .leftJoinAndSelect('course.tags', 'tags')
+      .leftJoinAndSelect('course.faculties', 'faculties')
+      .leftJoinAndSelect('faculties.avatar', 'facultyAvatar')
+      .leftJoinAndSelect('faculties.facultyProfile', 'facultyProfile')
+      .leftJoinAndSelect('faculties.profile', 'profile')
 
       // 🔥 CHAPTERS (ONLY PUBLISHED)
       .leftJoinAndSelect(

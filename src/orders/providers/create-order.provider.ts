@@ -8,6 +8,7 @@ import { Order } from '../order.entity';
 import { In, Repository } from 'typeorm';
 import { PaymentsService } from 'src/payments/providers/payments.service';
 import { OrderStatus } from '../enums/orderStatus.enum';
+import { CouponsService } from 'src/coupons/providers/coupons.service';
 
 @Injectable()
 export class CreateOrderProvider {
@@ -35,19 +36,23 @@ export class CreateOrderProvider {
      */
 
     private readonly paymentsService: PaymentsService,
+
+    /**
+     * Inject couponsService
+     */
+    private readonly couponsService: CouponsService,
   ) {}
   async create(createOrderDto: CreateOrderDto, user: ActiveUserData) {
-    // 🔥 1. Extract courseIds
     const courseIds = createOrderDto.items.map((i) => i.courseId);
 
-    // 🔥 2. Fetch courses
+    // 🔥 1. Fetch courses
     const courses = await this.coursesService.findManyByIds(courseIds);
 
     if (courses.length !== courseIds.length) {
       throw new BadRequestException('Invalid courses');
     }
 
-    // 🔥 3. Duplicate purchase check (FIXED)
+    // 🔥 2. Duplicate purchase check
     const existing = await this.orderItemRepository.find({
       where: {
         course: { id: In(courseIds) },
@@ -63,17 +68,48 @@ export class CreateOrderProvider {
       throw new BadRequestException('Course already purchased');
     }
 
-    // 🔥 4. Pricing (INTEGER SAFE)
-    const subTotal = courses.reduce((sum, c) => sum + Number(c.priceInr), 0);
+    // ===============================
+    // 🔥 3. ORIGINAL PRICE (GST INCLUDED)
+    // ===============================
+    const originalPrice = courses.reduce(
+      (sum, c) => sum + Number(c.priceInr),
+      0,
+    );
 
-    const taxRate = 0.18;
+    // ===============================
+    // 🔥 4. COUPON APPLY
+    // ===============================
+    const pricing = await this.couponsService.applyStackedCoupons(
+      user.sub,
+      originalPrice,
+      courseIds,
+      createOrderDto.couponCode, // manual coupon
+    );
+    const discount = pricing.totalDiscount;
+    const totalAmount = pricing.finalAmount;
 
-    const baseAmount = Math.round(subTotal / (1 + taxRate));
-    const tax = subTotal - baseAmount;
+    const autoCouponCode = pricing.autoCoupon?.code || null;
+    const manualCouponCode = pricing.manualCoupon?.code || null;
 
-    const discount = 0;
-    const totalAmount = subTotal - discount;
-    // 🔥 5. Create order
+    // ===============================
+    // 🔥 6. REVERSE GST (IMPORTANT)
+    // ===============================
+    const subTotal = Math.round(totalAmount / 1.18);
+    const tax = totalAmount - subTotal;
+
+    // ===============================
+    // 🔥 7. TAMPERING CHECK
+    // ===============================
+    if (
+      createOrderDto.totalAmount &&
+      Math.abs(createOrderDto.totalAmount - totalAmount) > 1
+    ) {
+      throw new BadRequestException('Price mismatch detected');
+    }
+
+    // ===============================
+    // 🔥 8. CREATE ORDER
+    // ===============================
     const order = this.orderRepository.create({
       user: { id: user.sub },
       subTotal,
@@ -84,6 +120,8 @@ export class CreateOrderProvider {
       status: OrderStatus.PENDING,
       billingAddress: createOrderDto.billingAddress,
       paymentMethod: createOrderDto.paymentMethod || 'RAZORPAY',
+      manualCouponCode: manualCouponCode,
+      autoCouponCode: autoCouponCode,
       items: courses.map((course) => ({
         course: { id: course.id },
         price: Number(course.priceInr),
@@ -93,15 +131,17 @@ export class CreateOrderProvider {
 
     await this.orderRepository.save(order);
 
-    // 🔥 6. Razorpay order create (IMPORTANT: rupees → paise)
+    // ===============================
+    // 🔥 9. RAZORPAY ORDER
+    // ===============================
     const razorpayOrder = await this.paymentsService.createOrder(
       totalAmount,
       `order_${order.id}`,
     );
 
-    // 🔥 7. Update SAME order (FIXED)
     order.orderId = razorpayOrder.id;
     await this.orderRepository.save(order);
+
     return {
       orderId: order.id,
       razorpayOrderId: razorpayOrder.id,

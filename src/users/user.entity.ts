@@ -3,14 +3,22 @@ import { Category } from 'src/categories/category.entity';
 import { Course } from 'src/courses/course.entity';
 import { Enrollment } from 'src/enrollments/enrollment.entity';
 import { Order } from 'src/orders/order.entity';
+import { FacultyProfile } from 'src/profiles/faculty-profile.entity';
+import { UserProfile } from 'src/profiles/user-profile.entity';
+import { Role } from 'src/roles-permissions/role.entity';
 import { Tag } from 'src/tags/tag.entity';
+import { Upload } from 'src/uploads/upload.entity';
 import { UserProgres } from 'src/user-progress/user-progres.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -40,6 +48,14 @@ export class User {
     nullable: false,
     unique: true,
   })
+  username?: string;
+
+  @Column({
+    type: 'varchar',
+    length: 255,
+    nullable: false,
+    unique: true,
+  })
   email!: string;
 
   @Column({
@@ -57,6 +73,12 @@ export class User {
   })
   @Exclude()
   password!: string;
+
+  @ManyToOne(() => Upload, { nullable: true, onDelete: 'SET NULL' })
+  avatar?: Upload | null;
+
+  @ManyToOne(() => Upload, { nullable: true, onDelete: 'SET NULL' })
+  coverImage?: Upload | null;
 
   @Exclude()
   @Column({ nullable: true, type: 'timestamptz' })
@@ -79,6 +101,19 @@ export class User {
 
   @OneToMany(() => Enrollment, (enrollment) => enrollment.user)
   enrollments!: Enrollment[];
+
+  @OneToOne(() => UserProfile, (profile) => profile.user)
+  profile?: UserProfile;
+
+  @OneToOne(() => FacultyProfile, (faculty) => faculty.user)
+  facultyProfile?: FacultyProfile;
+
+  @ManyToMany(() => Course, (course) => course.faculties)
+  taughtCourses?: Course[];
+
+  @ManyToMany(() => Role)
+  @JoinTable()
+  roles!: Role[];
 
   @CreateDateColumn()
   createdAt!: Date;

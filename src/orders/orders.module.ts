@@ -12,6 +12,7 @@ import { ChangeOrderStatusProvider } from './providers/change-order-status.provi
 import { CreateOrderProvider } from './providers/create-order.provider';
 import { RetryPaymentProvider } from './providers/retry-payment.provider';
 import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
+import { CouponsModule } from 'src/coupons/coupons.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
     forwardRef(() => PaymentsModule),
     SettingsModule,
     EnrollmentsModule,
+    CouponsModule,
   ],
   controllers: [OrdersController],
   providers: [

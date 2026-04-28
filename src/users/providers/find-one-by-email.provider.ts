@@ -17,7 +17,10 @@ export class FindOneByEmailProvider {
   public async findOneByEmail(email: string): Promise<User> {
     let user: User | null;
 
-    user = await this.userRepository.findOneBy({ email });
+    user = await this.userRepository.findOne({
+      where: { email },
+      relations: ['profile', 'roles', 'avatar', 'coverImage', 'facultyProfile'],
+    });
 
     if (!user) {
       throw new NotFoundException('User Not Found');

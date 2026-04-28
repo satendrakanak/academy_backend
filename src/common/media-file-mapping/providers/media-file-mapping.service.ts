@@ -3,6 +3,7 @@ import { Category } from 'src/categories/category.entity';
 import { Chapter } from 'src/chapters/chapter.entity';
 import { Course } from 'src/courses/course.entity';
 import { S3Provider } from 'src/uploads/providers/s3.provider';
+import { User } from 'src/users/user.entity';
 
 @Injectable()
 export class MediaFileMappingService {
@@ -28,6 +29,11 @@ export class MediaFileMappingService {
       ...course,
       image: this.mapFile(course.image!),
       video: this.mapFile(course.video!),
+      // 🔥 faculties mapping
+      faculties: course.faculties?.map((faculty) => ({
+        ...faculty,
+        avatar: faculty.avatar ? this.mapFile(faculty.avatar) : null,
+      })),
 
       chapters: course.chapters?.map((chapter: Chapter) => ({
         ...chapter,
@@ -56,5 +62,17 @@ export class MediaFileMappingService {
 
   mapCategories(categories: Category[]) {
     return categories.map((category) => this.mapCategory(category));
+  }
+
+  mapUser(user: User) {
+    return {
+      ...user,
+      avatar: this.mapFile(user.avatar!),
+      coverImage: this.mapFile(user.coverImage!),
+    };
+  }
+
+  mapUsers(users: User[]) {
+    return users.map((user) => this.mapUser(user));
   }
 }

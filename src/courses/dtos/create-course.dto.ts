@@ -131,7 +131,16 @@ export class CreateCourseDto {
   @IsInt({ each: true })
   tags?: number[];
 
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  facultyIds?: number[];
+
   @IsBoolean()
   @IsOptional()
   isPublished?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
 }

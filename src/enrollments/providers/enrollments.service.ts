@@ -57,6 +57,12 @@ export class EnrollmentsService {
     return enrollments;
   }
 
+  async getUserCourseCount(userId: number): Promise<number> {
+    return this.enrollmentRepository.count({
+      where: { user: { id: userId } },
+    });
+  }
+
   // 🥉 CHECK ACCESS (important)
   async checkEnrollment(userId: number, courseId: number) {
     const enrollment = await this.enrollmentRepository.findOne({

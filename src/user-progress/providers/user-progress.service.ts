@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateLectureProgressDto } from '../dtos/update-lecture-progress.dto';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
+import { WeeklyProgress } from '../interfaces/weekly-progress.interface';
 
 @Injectable()
 export class UserProgressService {
@@ -170,5 +171,81 @@ export class UserProgressService {
     });
 
     return this.userProgressRepository.save(newRecord);
+  }
+
+  async getCompletedCoursesCount(userId: number): Promise<number> {
+    const courses = await this.userProgressRepository
+      .createQueryBuilder('progress')
+      .leftJoin('progress.lecture', 'lecture')
+      .leftJoin('lecture.chapter', 'chapter')
+      .leftJoin('chapter.course', 'course')
+      .select('course.id', 'courseId')
+      .addSelect('COUNT(lecture.id)', 'completedLectures')
+      .where('progress.userId = :userId', { userId })
+      .andWhere('progress.isCompleted = true')
+      .groupBy('course.id')
+      .getRawMany();
+
+    let completedCourses = 0;
+
+    for (const course of courses) {
+      const totalLectures = await this.userProgressRepository.manager
+        .getRepository('Lecture')
+        .count({
+          where: {
+            chapter: {
+              course: { id: course.courseId },
+            },
+            isPublished: true,
+          },
+        });
+
+      if (Number(course.completedLectures) === totalLectures) {
+        completedCourses++;
+      }
+    }
+
+    return completedCourses;
+  }
+
+  async getAverageProgress(userId: number): Promise<number> {
+    const courses = await this.userProgressRepository
+      .createQueryBuilder('progress')
+      .leftJoin('progress.lecture', 'lecture')
+      .leftJoin('lecture.chapter', 'chapter')
+      .leftJoin('chapter.course', 'course')
+      .select('course.id', 'courseId')
+      .addSelect('AVG(progress.progress)', 'avgProgress')
+      .where('progress.userId = :userId', { userId })
+      .groupBy('course.id')
+      .getRawMany();
+
+    if (!courses.length) return 0;
+
+    const total = courses.reduce((sum, c) => sum + Number(c.avgProgress), 0);
+
+    return Math.round(total / courses.length);
+  }
+
+  async getWeeklyProgress(userId: number): Promise<WeeklyProgress[]> {
+    const result = await this.userProgressRepository
+      .createQueryBuilder('progress')
+      .select([
+        'DATE(progress.updatedAt) as date',
+        'AVG(progress.progress) as avgProgress',
+      ])
+      .where('progress.userId = :userId', { userId })
+      .andWhere("progress.updatedAt >= NOW() - INTERVAL '7 days'")
+      .groupBy('date')
+      .orderBy('date', 'ASC')
+      .getRawMany();
+
+    // 🔥 format for chart
+    return result.map((item) => ({
+      day: new Date(item.date).toLocaleDateString('en-US', {
+        weekday: 'short',
+      }),
+      progress: Math.round(item.avgProgress),
+    }));
   }
 }

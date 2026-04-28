@@ -1,4 +1,11 @@
-import { IsArray, ValidateNested, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  ValidateNested,
+  IsOptional,
+  IsString,
+  IsNumber,
+  IsNotEmpty,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { CreateOrderItemDto } from './create-order-item.dto';
 import { BillingAddressDto } from './billing-address.dto';
@@ -12,6 +19,22 @@ export class CreateOrderDto {
   @ValidateNested()
   @Type(() => BillingAddressDto)
   billingAddress!: BillingAddressDto;
+
+  @IsNumber()
+  @IsNotEmpty()
+  subTotal!: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  discount!: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  tax!: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  totalAmount!: number;
 
   @IsOptional()
   @IsString()

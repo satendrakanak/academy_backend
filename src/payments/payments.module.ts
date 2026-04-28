@@ -11,8 +11,4 @@ import { OrdersModule } from 'src/orders/orders.module';
   controllers: [PaymentsController],
   exports: [PaymentsService],
 })
-export class PaymentsModule {
-  constructor() {
-    console.log('SettingsModule:', SettingsModule);
-  }
-}
+export class PaymentsModule {}

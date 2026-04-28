@@ -57,6 +57,9 @@ export class Course {
   isFree!: boolean;
 
   @Column({ type: 'boolean', default: false })
+  isFeatured!: boolean;
+
+  @Column({ type: 'boolean', default: false })
   isPublished!: boolean;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
@@ -114,6 +117,16 @@ export class Course {
   @ManyToMany(() => Tag, (tag) => tag.courses)
   @JoinTable()
   tags?: Tag[];
+
+  @ManyToMany(() => User, (user) => user.taughtCourses, {
+    cascade: false,
+  })
+  @JoinTable({
+    name: 'course_faculties',
+    joinColumn: { name: 'course_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'user_id', referencedColumnName: 'id' },
+  })
+  faculties?: User[];
 
   @OneToMany(() => Chapter, (chapter) => chapter.course)
   chapters!: Chapter[];

@@ -36,11 +36,17 @@ export class CoursesController {
     return await this.coursesService.findAll(getCoursesDto, user);
   }
 
-  @Get(':id')
-  public async getCourseById(
+  @Get('featured')
+  async getFeaturedCourses(@ActiveUser() user: ActiveUserData) {
+    return await this.coursesService.getFeaturedCourses(user);
+  }
+
+  @Get('related/:id')
+  async getRelatedCourses(
     @Param('id', ParseIntPipe) id: number,
-  ): Promise<Course> {
-    return await this.coursesService.findOneById(id);
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return await this.coursesService.getRelatedCourses(id, user);
   }
 
   @Get('slug/:slug')
@@ -57,6 +63,22 @@ export class CoursesController {
   ) {
     return this.coursesService.findCourseForLearning(slug, user);
   }
+
+  @Get('enrolled/:userId')
+  async getEnrolledCourses(
+    @Param('userId', ParseIntPipe) userId: number,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    return await this.coursesService.getEnrolledCourses(userId, user);
+  }
+
+  @Get(':id')
+  public async getCourseById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<Course> {
+    return await this.coursesService.findOneById(id);
+  }
+
   @Post()
   public async createCourse(
     @ActiveUser() user: ActiveUserData,

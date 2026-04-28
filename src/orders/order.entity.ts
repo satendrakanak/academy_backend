@@ -28,7 +28,10 @@ export class Order {
   discount!: number;
 
   @Column({ type: 'varchar', length: 50, nullable: true })
-  couponCode?: string;
+  autoCouponCode?: string | null;
+
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  manualCouponCode?: string | null;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   tax!: number;

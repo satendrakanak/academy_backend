@@ -19,6 +19,13 @@ import { RestoreUserProvider } from './providers/restore-user.provider';
 import { DeleteUserProvider } from './providers/delete-user.provider';
 import { MarkEmailVerifiedProvider } from './providers/mark-email-verified.provider';
 import { UpdatePasswordProvider } from './providers/update-password.provider';
+import { RolesPermissionsModule } from 'src/roles-permissions/roles-permissions.module';
+import { ProfilesModule } from 'src/profiles/profiles.module';
+import { GenerateUsernameProvider } from './providers/generate-username.provider';
+import { ChangePasswordProvider } from './providers/change-password.provider';
+import { GetDashboardStatsProvider } from './providers/get-dashboard-stats.provider';
+import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
+import { UserProgressModule } from 'src/user-progress/user-progress.module';
 
 @Module({
   imports: [
@@ -27,6 +34,10 @@ import { UpdatePasswordProvider } from './providers/update-password.provider';
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
     PaginationModule,
+    RolesPermissionsModule,
+    forwardRef(() => ProfilesModule),
+    EnrollmentsModule,
+    UserProgressModule,
   ],
   controllers: [UsersController],
   providers: [
@@ -40,6 +51,9 @@ import { UpdatePasswordProvider } from './providers/update-password.provider';
     DeleteUserProvider,
     MarkEmailVerifiedProvider,
     UpdatePasswordProvider,
+    GenerateUsernameProvider,
+    ChangePasswordProvider,
+    GetDashboardStatsProvider,
   ],
   exports: [UsersService],
 })

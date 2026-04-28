@@ -35,6 +35,8 @@ import { SettingsModule } from './settings/settings.module';
 import { CryptoModule } from './common/crypto/crypto.module';
 import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { CouponsModule } from './coupons/coupons.module';
+import { RolesPermissionsModule } from './roles-permissions/roles-permissions.module';
+import { ProfilesModule } from './profiles/profiles.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -93,6 +95,8 @@ const ENV = process.env.NODE_ENV;
     CryptoModule,
     EnrollmentsModule,
     CouponsModule,
+    RolesPermissionsModule,
+    ProfilesModule,
   ],
   controllers: [AppController],
   providers: [

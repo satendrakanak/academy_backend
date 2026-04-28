@@ -17,6 +17,7 @@ import { UploadsService } from 'src/uploads/providers/uploads.service';
 import { CategoriesService } from 'src/categories/providers/categories.service';
 import { TagsService } from 'src/tags/providers/tags.service';
 import { getCoursePublishErrors } from '../utils/course-publish.validator';
+import { UsersService } from 'src/users/providers/users.service';
 
 @Injectable()
 export class UpdateCourseProvider {
@@ -47,6 +48,12 @@ export class UpdateCourseProvider {
      * Inject tagsService
      */
     private readonly tagsService: TagsService,
+
+    /**
+     * Inject usersService
+     */
+
+    private readonly usersService: UsersService,
   ) {}
   public async update(
     id: number,
@@ -119,12 +126,25 @@ export class UpdateCourseProvider {
         course.imageAlt = patchCourseDto.imageAlt;
       }
 
+      if (patchCourseDto.facultyIds !== undefined) {
+        const faculties = await this.usersService.getFacultiesByIds(
+          patchCourseDto.facultyIds,
+        );
+
+        if (faculties.length !== patchCourseDto.facultyIds.length) {
+          throw new BadRequestException('Some users are not faculty');
+        }
+
+        course.faculties = faculties;
+      }
+
       const {
         imageId,
         videoId,
         imageAlt,
         categories,
         tags,
+        facultyIds,
         isPublished,
         ...rest
       } = patchCourseDto;

@@ -38,6 +38,7 @@ export class GenerateTokensProvider {
   }
 
   public async generateTokens(user: User) {
+    const roles = user.roles?.map((r) => r.name) || [];
     const [accessToken, refreshToken] = await Promise.all([
       //generate access token
       this.signToken<Partial<ActiveUserData>>(
@@ -45,6 +46,7 @@ export class GenerateTokensProvider {
         this.jwtConfiguration.tokenTtl,
         {
           email: user.email,
+          roles,
         },
       ),
 

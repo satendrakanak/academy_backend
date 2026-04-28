@@ -14,6 +14,10 @@ import { FindOneBySlugProvider } from './providers/find-one-by-slug.provider';
 import { OrdersModule } from 'src/orders/orders.module';
 import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
 import { UserProgressModule } from 'src/user-progress/user-progress.module';
+import { GetFeaturedCoursesProvider } from './providers/get-featured-courses.provider';
+import { GetRelatedCoursesProvider } from './providers/get-related-courses.provider';
+import { GetEnrolledCoursesProvider } from './providers/get-enrolled-courses.provider';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
@@ -26,6 +30,7 @@ import { UserProgressModule } from 'src/user-progress/user-progress.module';
     UploadsModule,
     EnrollmentsModule,
     UserProgressModule,
+    UsersModule,
     forwardRef(() => OrdersModule),
   ],
   controllers: [CoursesController],
@@ -34,6 +39,9 @@ import { UserProgressModule } from 'src/user-progress/user-progress.module';
     CreateCourseProvider,
     UpdateCourseProvider,
     FindOneBySlugProvider,
+    GetFeaturedCoursesProvider,
+    GetRelatedCoursesProvider,
+    GetEnrolledCoursesProvider,
   ],
   exports: [CoursesService],
 })
