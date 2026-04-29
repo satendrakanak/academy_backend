@@ -44,7 +44,6 @@ export class EmailTemplatesController {
   public async getEmailTemplateByName(
     @Query('name') name: string,
   ): Promise<EmailTemplate> {
-    console.log(name);
     return await this.emailTemplatesService.getByName(name);
   }
   @Get(':id')

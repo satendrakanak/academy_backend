@@ -4,4 +4,7 @@ export interface ActiveUserData {
 
   //Email of the user
   email: string;
+
+  //Roles of the user
+  roles: string[];
 }

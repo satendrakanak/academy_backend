@@ -1,7 +1,8 @@
 export enum FileTypes {
   IMAGE = 'image',
   VIDEO = 'video',
-  DOCUMENT = 'document',
+  CSV = 'csv',
   EXCEL = 'excel',
-  OTHER = 'other',
+  PDF = 'pdf',
+  DOC = 'doc',
 }

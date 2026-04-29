@@ -1,13 +1,14 @@
 import {
+  Body,
   Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
   Post,
-  UploadedFile,
-  UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiHeaders, ApiOperation } from '@nestjs/swagger';
-import type { Express } from 'express';
 import { UploadsService } from './providers/uploads.service';
+import { InitUploadDto } from './dtos/init-upload.dto';
 
 @Controller('uploads')
 export class UploadsController {
@@ -19,22 +20,24 @@ export class UploadsController {
     private readonly uploadsService: UploadsService,
   ) {}
 
-  @UseInterceptors(FileInterceptor('file'))
-  @Post('file')
-  @ApiHeaders([
-    {
-      name: 'Content-Type',
-      description: 'multipart/form-data',
-    },
-    {
-      name: 'Authorization',
-      description: 'Bearer token',
-    },
-  ])
-  @ApiOperation({
-    summary: 'Upload a file to the server',
-  })
-  public async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return await this.uploadsService.uploadFile(file);
+  @Get()
+  async getUploads() {
+    return await this.uploadsService.getUploads();
+  }
+
+  @Post('init')
+  initUpload(@Body() initUploadDto: InitUploadDto) {
+    return this.uploadsService.initUpload(initUploadDto);
+  }
+
+  // STEP 3: confirm upload
+  @Post('confirm/:id')
+  confirmUpload(@Param('id') id: number) {
+    return this.uploadsService.confirmUpload(Number(id));
+  }
+
+  @Delete(':id')
+  async deleteFile(@Param('id', ParseIntPipe) id: number) {
+    return await this.uploadsService.delete(id);
   }
 }

@@ -22,8 +22,7 @@ import { Paginated } from 'src/common/pagination/interfaces/paginated.interface'
 import { DeleteBulkCategoriesDto } from './dtos/delete-bulk-categories.dto';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import type { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { AuthType } from 'src/auth/enums/auth-type.enum';
+import { CategoryType } from './enums/categoryType.enum';
 
 @Controller('categories')
 export class CategoriesController {
@@ -35,15 +34,22 @@ export class CategoriesController {
   ) {}
 
   @Get()
-  @Auth(AuthType.None)
   public async getCategories(
     @Query() getCategoriesDto: GetCategoriesDto,
   ): Promise<Paginated<Category>> {
     return await this.categoriesService.findAll(getCategoriesDto);
   }
 
+  @Get('by-type')
+  public async getCategoriesByType(
+    @Query('type') type: string,
+  ): Promise<Category[]> {
+    return await this.categoriesService.findAllByType(
+      type.toLowerCase() as CategoryType,
+    );
+  }
+
   @Get(':id')
-  @Auth(AuthType.None)
   public async getCategoryById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<Category> {

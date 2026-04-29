@@ -7,5 +7,5 @@ export class CreateBulkUsersDto {
   @IsNotEmpty()
   @ValidateNested({ each: true })
   @Type(() => CreateUserDto)
-  users: CreateUserDto[];
+  users!: CreateUserDto[];
 }

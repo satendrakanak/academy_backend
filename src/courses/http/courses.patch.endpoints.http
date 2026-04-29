@@ -1,0 +1,7 @@
+PATCH http://localhost:8000/courses/23
+Content-Type: application/json
+Cookie: accessToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQ1LCJlbWFpbCI6Imdhbmd3YXJzYXRlbmRyYS5rY210QGdtYWlsLmNvbSIsImlhdCI6MTc3NTg3OTQzMCwiZXhwIjoxNzc1ODgzMDMwLCJhdWQiOiJsb2NhbGhvc3Q6MzAwMCIsImlzcyI6ImxvY2FsaG9zdDozMDAwIn0.tgzBrN6CkRu2B6QItkOtmNuGpn5IOb7q-Ws5R_inw80
+{
+    "isFree": false,
+    "tags": [4,5]
+}

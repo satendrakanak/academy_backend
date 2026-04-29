@@ -7,6 +7,8 @@ import { MailProcessor } from './mail.processor';
 import { SendWelcomeEmailProvider } from './providers/send-welcome-email.provider';
 import { EmailTemplatesModule } from 'src/email-templates/email-templates.module';
 import { SendVerificationEmailProvider } from './providers/send-verification-email.provider';
+import { SendForgotPasswordEmailProvider } from './providers/send-forgot-password-email.provider';
+import { SendResetPasswordEmailProvider } from './providers/send-reset-password-email.provider';
 
 @Global()
 @Module({
@@ -38,7 +40,14 @@ import { SendVerificationEmailProvider } from './providers/send-verification-ema
     }),
     EmailTemplatesModule,
   ],
-  providers: [MailService, MailProcessor, SendWelcomeEmailProvider, SendVerificationEmailProvider],
+  providers: [
+    MailService,
+    MailProcessor,
+    SendWelcomeEmailProvider,
+    SendVerificationEmailProvider,
+    SendForgotPasswordEmailProvider,
+    SendResetPasswordEmailProvider,
+  ],
   exports: [MailService],
 })
 export class MailModule {}

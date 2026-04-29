@@ -1,0 +1,12 @@
+POST http://localhost:8000/settings/gateway
+Content-Type: application/json
+
+{
+  "provider": "RAZORPAY",
+  "mode": "TEST",
+  "keyId": "rzp_test_ShOgBSHnKwbbpa",
+  "keySecret": "j1oj7S6L5xciXV1q5ALkQmPD",
+  "webhookSecret": "1234567890",
+  "webhookUrl": "https://yourdomain.com/api/webhook/razorpay",
+  "isActive": true
+}

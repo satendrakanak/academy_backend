@@ -1,6 +1,10 @@
+import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsEmail,
+  IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -27,10 +31,29 @@ export class CreateUserDto {
   @MaxLength(255)
   email!: string;
 
-  @IsPhoneNumber()
+  @IsString()
+  @IsOptional()
+  @MaxLength(255)
+  username?: string;
+
   @IsOptional()
   @MaxLength(15)
   phoneNumber?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  avatarId?: number;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  coverImageId?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  roleIds?: number[];
 
   @IsString()
   @IsNotEmpty()

@@ -20,4 +20,5 @@ export default registerAs('appConfig', () => ({
   smtpFromEmail: process.env.SMTP_FROM_EMAIL,
   redisHost: process.env.REDIS_HOST,
   redisPort: process.env.REDIS_PORT,
+  appEncryptionKey: process.env.APP_ENCRYPTION_KEY,
 }));

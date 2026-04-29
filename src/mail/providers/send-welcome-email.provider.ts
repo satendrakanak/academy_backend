@@ -9,6 +9,7 @@ import { User } from 'src/users/user.entity';
 import { parseTemplate } from '../utils/template-parser';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SendWelcomeEmailProvider {
@@ -24,6 +25,11 @@ export class SendWelcomeEmailProvider {
 
     @InjectQueue('mail')
     private readonly mailQueue: Queue,
+
+    /**
+     * Inject configService
+     */
+    private readonly configService: ConfigService,
   ) {}
 
   async sendWelcomeEmail(user: User): Promise<void> {
@@ -39,6 +45,9 @@ export class SendWelcomeEmailProvider {
 
     const html = parseTemplate(template.body, {
       name: user.firstName,
+      email: user.email,
+      dashboardUrl: `${this.configService.get<string>('appConfig.fronEndUrl')}/admin/dashboard`,
+      year: new Date().getFullYear().toString(),
     });
     await this.mailQueue.add('send-email', {
       to: user.email,

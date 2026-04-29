@@ -1,5 +1,9 @@
 GET http://localhost:8000/categories
+
 ?limit=2
 &page=1
 
 GET http://localhost:8000/categories/29
+
+GET http://localhost:8000/categories/by-type?type=course
+Cookie: accessToken= eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjQ1LCJlbWFpbCI6Imdhbmd3YXJzYXRlbmRyYS5rY210QGdtYWlsLmNvbSIsImlhdCI6MTc3NTg0NzQ1MCwiZXhwIjoxNzc1ODUxMDUwLCJhdWQiOiJsb2NhbGhvc3Q6MzAwMCIsImlzcyI6ImxvY2FsaG9zdDozMDAwIn0.vLzFXA2gq_ALmRE3GILrrfoyu1MnVdTBIG2d52j6YfI

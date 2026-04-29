@@ -4,7 +4,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Category } from '../category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateCategoryDto } from '../dtos/create-category.dto';
@@ -20,6 +20,8 @@ import { CreateBulkCategoriesProvider } from './create-bulk-categories.provider'
 import { DeleteBulkCategoriesDto } from '../dtos/delete-bulk-categories.dto';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { CreateCategoryProvider } from './create-category.provider';
+import { CategoryType } from '../enums/categoryType.enum';
+import { MediaFileMappingService } from 'src/common/media-file-mapping/providers/media-file-mapping.service';
 
 @Injectable()
 export class CategoriesService {
@@ -59,21 +61,42 @@ export class CategoriesService {
      */
 
     private readonly createCategoryProvider: CreateCategoryProvider,
+
+    /**
+     * Inject mediaFileMappingService
+     */
+
+    private readonly mediaFileMappingService: MediaFileMappingService,
   ) {}
 
   public async findAll(
     getCategoriesDto: GetCategoriesDto,
   ): Promise<Paginated<Category>> {
-    return await this.paginationProvider.paginateQuery(
+    const result = await this.paginationProvider.paginateQuery(
       {
         limit: getCategoriesDto.limit,
         page: getCategoriesDto.page,
       },
       this.categoryRepository,
       {
-        relations: ['createdBy'],
+        relations: ['createdBy', 'image'],
+        order: {
+          createdAt: 'DESC',
+        },
       },
     );
+    result.data = this.mediaFileMappingService.mapCategories(result.data);
+
+    return result;
+  }
+
+  public async findAllByType(type: CategoryType): Promise<Category[]> {
+    const categories = await this.categoryRepository.find({
+      where: { type },
+      order: { name: 'ASC' }, // 🔥 UX better
+    });
+
+    return categories;
   }
 
   public async findOne(id: number): Promise<Category> {
@@ -87,6 +110,14 @@ export class CategoriesService {
     }
 
     return category;
+  }
+
+  public async findMany(ids: number[]): Promise<Category[]> {
+    return await this.categoryRepository.find({
+      where: {
+        id: In(ids),
+      },
+    });
   }
 
   public async create(
@@ -190,4 +221,16 @@ export class CategoriesService {
 
     return restoredCategory!;
   }
+
+  // private buildCategoryQuery(type?: CategoryType) {
+  //   const qb = this.categoryRepository
+  //     .createQueryBuilder('category')
+  //     .leftJoinAndSelect('category.createdBy', 'createdBy');
+
+  //   if (type) {
+  //     qb.andWhere('category.type = :type', { type });
+  //   }
+
+  //   return qb;
+  // }
 }

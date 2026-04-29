@@ -30,10 +30,11 @@ export class AccessTokenGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     //Extract the request from the execution context
     const request = context.switchToHttp().getRequest();
+
     //Extract the token from the header
     const token = this.extractTokenFromRequest(request);
-    //validate the token
 
+    //validate the token
     if (!token) {
       throw new UnauthorizedException();
     }
@@ -51,6 +52,9 @@ export class AccessTokenGuard implements CanActivate {
   }
 
   private extractTokenFromRequest(request: Request): string | undefined {
+    if (request.cookies?.accessToken) {
+      return request.cookies.accessToken;
+    }
     const [_, token] = request.headers.authorization?.split(' ') ?? [];
     return token;
   }

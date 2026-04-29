@@ -28,7 +28,7 @@ export class MailProcessor extends WorkerHost {
       }
     } catch (error) {
       this.logger.error(`❌ Email failed for ${job.data.to}`, error);
-      throw error; // 🔥 IMPORTANT → retry trigger karega
+      throw error;
     }
   }
 }

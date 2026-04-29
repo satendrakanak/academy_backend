@@ -21,18 +21,14 @@ export class UpdateEmailTemplateProvider {
     id: number,
     updateEmailTemplateDto: UpdateEmailTemplateDto,
   ): Promise<EmailTemplate> {
-    try {
-      const emailTemplate = await this.emailTemplateRepository.findOneBy({
-        id,
-      });
-      if (!emailTemplate) {
-        throw new NotFoundException('Email template not found');
-      }
-      Object.assign(emailTemplate, updateEmailTemplateDto);
+    const emailTemplate = await this.emailTemplateRepository.findOneBy({ id });
 
-      return await this.emailTemplateRepository.save(emailTemplate);
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to create email template');
+    if (!emailTemplate) {
+      throw new NotFoundException('Email template not found');
     }
+
+    Object.assign(emailTemplate, updateEmailTemplateDto);
+
+    return await this.emailTemplateRepository.save(emailTemplate);
   }
 }

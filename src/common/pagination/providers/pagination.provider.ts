@@ -1,6 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PaginationQueryDto } from '../dtos/pagination-query.dto';
-import { FindManyOptions, ObjectLiteral, Repository } from 'typeorm';
+import {
+  FindManyOptions,
+  FindOptionsOrder,
+  ObjectLiteral,
+  Repository,
+} from 'typeorm';
 import { Paginated } from '../interfaces/paginated.interface';
 import { REQUEST } from '@nestjs/core';
 import type { Request } from 'express';
@@ -20,12 +25,24 @@ export class PaginationProvider {
     repository: Repository<T>,
     findOptions?: FindManyOptions<T>,
   ): Promise<Paginated<T>> {
-    const { page = 1, limit = 10 } = paginateQuery;
+    const { page = 1, limit = 10, sortBy, sortOrder } = paginateQuery;
+    let order: FindOptionsOrder<T> | undefined;
 
+    const allowedSortFields: (keyof T)[] = ['name', 'createdAt'];
+
+    if (sortBy && allowedSortFields.includes(sortBy as keyof T)) {
+      order = {} as FindOptionsOrder<T>;
+      (order as Record<string, any>)[sortBy] = sortOrder;
+    }
+    const mergedOrder = {
+      ...(findOptions?.order || {}),
+      ...(order || {}),
+    } as FindOptionsOrder<T>;
     const [results, totalItems] = await repository.findAndCount({
       skip: (page - 1) * limit,
       take: limit,
       ...findOptions,
+      order: mergedOrder,
     });
 
     /**

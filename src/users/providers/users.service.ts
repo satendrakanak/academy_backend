@@ -1,5 +1,11 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { In, Repository } from 'typeorm';
 import { User } from '../user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
@@ -18,6 +24,17 @@ import { DeleteBulkUsersDto } from '../dtos/delete-bulk-users.dto';
 import { RestoreUserProvider } from './restore-user.provider';
 import { DeleteUserProvider } from './delete-user.provider';
 import { MarkEmailVerifiedProvider } from './mark-email-verified.provider';
+import { UpdatePasswordProvider } from './update-password.provider';
+import { ChangePasswordDto } from '../dtos/change-password.dto';
+import { ChangePasswordProvider } from './change-password.provider';
+import { GetDashboardStatsProvider } from './get-dashboard-stats.provider';
+import { WeeklyProgress } from 'src/user-progress/interfaces/weekly-progress.interface';
+import { AdminUpdateUserDto } from '../dtos/admin-update-user.dto';
+import { UpdateProfileDto } from 'src/profiles/dtos/update-profile.dto';
+import { ProfilesService } from 'src/profiles/providers/profiles.service';
+import { MediaFileMappingService } from 'src/common/media-file-mapping/providers/media-file-mapping.service';
+import { UpdateFacultyProfileDto } from 'src/profiles/dtos/update.faculty-profile.dto';
+import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 
 @Injectable()
 export class UsersService {
@@ -77,16 +94,52 @@ export class UsersService {
      */
 
     private readonly markEmailVerifiedProvider: MarkEmailVerifiedProvider,
+
+    /**
+     * Inject updatePasswordProvider
+     */
+
+    private readonly updatePasswordProvider: UpdatePasswordProvider,
+    /**
+     * Inject changePasswordProvider
+     */
+    private readonly changePasswordProvider: ChangePasswordProvider,
+
+    /***
+     * Inject getDashboardStatsProvider
+     */
+
+    private readonly getDashboardStatsProvider: GetDashboardStatsProvider,
+
+    /**
+     * Inject mediaFileMappingService
+     */
+    private readonly mediaFileMappingService: MediaFileMappingService,
+
+    /**
+     * Inject usersService
+     */
+    @Inject(forwardRef(() => ProfilesService))
+    private readonly profilesService: ProfilesService,
   ) {}
 
   public async findAll(getUsersDto: GetUsersDto): Promise<Paginated<User>> {
-    return await this.paginationProvider.paginateQuery(
+    const result = await this.paginationProvider.paginateQuery(
       {
         limit: getUsersDto.limit,
         page: getUsersDto.page,
       },
       this.userRepository,
+      {
+        relations: ['roles', 'profile', 'avatar', 'coverImage'],
+        order: {
+          createdAt: 'DESC',
+        },
+      },
     );
+    result.data = this.mediaFileMappingService.mapUsers(result.data);
+
+    return result;
   }
 
   public async findOneById(id: number): Promise<User> {
@@ -97,8 +150,30 @@ export class UsersService {
     return await this.findOneByEmailProvider.findOneByEmail(email);
   }
 
-  public async create(createUserDto: CreateUserDto): Promise<User> {
-    return await this.createUserprovider.create(createUserDto);
+  async getUserWithProfile(userId: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['profile', 'roles', 'avatar', 'coverImage', 'facultyProfile'],
+    });
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    return user;
+  }
+
+  async getUserByUsername(username: string) {
+    return this.userRepository.findOne({
+      where: { username },
+      relations: ['profile'],
+    });
+  }
+
+  public async create(
+    createUserDto: CreateUserDto,
+    currentUser?: ActiveUserData,
+  ): Promise<User> {
+    return await this.createUserprovider.create(createUserDto, currentUser);
   }
 
   public async createMany(
@@ -109,6 +184,57 @@ export class UsersService {
 
   public async update(id: number, patchUserDto: PatchUserDto): Promise<User> {
     return await this.updateUserProvider.update(id, patchUserDto);
+  }
+
+  async updateUserByAdmin(
+    userId: number,
+    adminUpdateUserDto: AdminUpdateUserDto,
+  ) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (!user) throw new NotFoundException('User not found');
+
+    Object.assign(user, adminUpdateUserDto);
+
+    return this.userRepository.save(user);
+  }
+
+  async updateUserProfile(
+    userId: number,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<User> {
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    if (!user) throw new NotFoundException('User not found');
+    const profile = await this.profilesService.updateProfile(
+      userId,
+      updateProfileDto,
+    );
+
+    return profile;
+  }
+
+  async updateFacultyProfile(
+    userId: number,
+    updateFacultyProfileDto: UpdateFacultyProfileDto,
+  ) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['roles'],
+    });
+
+    if (!user) throw new NotFoundException('User not found');
+    const isFaculty = user.roles.some((r) => r.name === 'faculty');
+
+    if (!isFaculty) {
+      throw new BadRequestException('User is not a faculty');
+    }
+    const profile = await this.profilesService.updateFacultyProfile(
+      userId,
+      updateFacultyProfileDto,
+    );
+
+    return profile;
   }
 
   public async delete(id: number): Promise<DeleteRecord> {
@@ -131,5 +257,54 @@ export class UsersService {
 
   async markEmailVerified(userId: number): Promise<User> {
     return await this.markEmailVerifiedProvider.markEmailVerified(userId);
+  }
+  async updatePassword(
+    userId: number,
+    password: string,
+    confirmPassword: string,
+  ): Promise<User> {
+    return await this.updatePasswordProvider.updatePassword(
+      userId,
+      password,
+      confirmPassword,
+    );
+  }
+
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
+    return await this.changePasswordProvider.changePassword(
+      userId,
+      changePasswordDto,
+    );
+  }
+
+  async getDashboardStats(userId: number) {
+    return await this.getDashboardStatsProvider.getDashboardStats(userId);
+  }
+
+  async getWeeklyProgress(userId: number): Promise<WeeklyProgress[]> {
+    return this.getDashboardStatsProvider.getWeeklyProgress(userId);
+  }
+
+  async getAllFaculty() {
+    const faculties = await this.userRepository.find({
+      relations: ['roles', 'facultyProfile', 'profile', 'avatar'],
+      where: {
+        roles: {
+          name: 'faculty',
+        },
+      },
+    });
+
+    const mapped = this.mediaFileMappingService.mapUsers(faculties);
+
+    return mapped;
+  }
+  async getFacultiesByIds(ids: number[]) {
+    const users = await this.userRepository.find({
+      where: { id: In(ids) },
+      relations: ['roles'],
+    });
+
+    return users.filter((u) => u.roles.some((r) => r.name === 'faculty'));
   }
 }

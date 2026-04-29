@@ -3,10 +3,13 @@ import { AppModule } from './app.module';
 import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import cookieParser from 'cookie-parser';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.use('/orders/webhook', express.raw({ type: '*/*' }));
+  app.use(cookieParser());
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -40,7 +43,10 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
   // enable CORS
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3000', // 🔥 exact frontend
+    credentials: true, // 🔥 MUST
+  });
 
   await app.listen(process.env.APP_PORT ?? 8000);
 }

@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -6,13 +7,15 @@ import {
   IsNumberString,
   Length,
   Matches,
+  IsInt,
+  IsArray,
 } from 'class-validator';
 
 export class CreateCourseDto {
   @IsString()
   @IsNotEmpty()
   @Length(3, 255)
-  title: string;
+  title!: string;
 
   @IsString()
   @IsOptional()
@@ -20,7 +23,11 @@ export class CreateCourseDto {
   @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
     message: 'Slug must be a valid slug',
   })
-  slug: string;
+  slug!: string;
+
+  @IsString()
+  @IsOptional()
+  shortDescription?: string;
 
   @IsString()
   @IsOptional()
@@ -28,11 +35,43 @@ export class CreateCourseDto {
 
   @IsString()
   @IsOptional()
-  image?: string;
+  @Length(3, 60)
+  metaTitle?: string;
+
+  @IsString()
+  @IsOptional()
+  @Length(3, 100)
+  @Matches(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+    message: 'Meta Slug must be a valid slug',
+  })
+  metaSlug?: string;
+
+  @IsString()
+  @IsOptional()
+  metaDescription?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  imageId?: number;
+
+  @IsString()
+  @IsOptional()
+  @Length(3, 96)
+  imageAlt?: string;
+
+  @IsInt()
+  @IsOptional()
+  @Type(() => Number)
+  videoId?: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isFree?: boolean;
 
   @IsNumberString()
-  @IsNotEmpty()
-  priceInr: string;
+  @IsOptional()
+  priceInr?: string;
 
   @IsNumberString()
   @IsOptional()
@@ -46,9 +85,9 @@ export class CreateCourseDto {
   @IsOptional()
   mode?: string;
 
-  @IsBoolean()
+  @IsString()
   @IsOptional()
-  certificate?: boolean;
+  certificate?: string;
 
   @IsString()
   @IsOptional()
@@ -56,7 +95,6 @@ export class CreateCourseDto {
 
   @IsString()
   @IsOptional()
-  @Length(1, 50)
   experienceLevel?: string;
 
   @IsString()
@@ -69,7 +107,6 @@ export class CreateCourseDto {
 
   @IsString()
   @IsOptional()
-  @Length(1, 50)
   language?: string;
 
   @IsString()
@@ -83,4 +120,27 @@ export class CreateCourseDto {
   @IsString()
   @IsOptional()
   disclaimer?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  categories?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  tags?: number[];
+
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  facultyIds?: number[];
+
+  @IsBoolean()
+  @IsOptional()
+  isPublished?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  isFeatured?: boolean;
 }

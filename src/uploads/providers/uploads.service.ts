@@ -1,15 +1,12 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-} from '@nestjs/common';
-import { UploadFileToS3Provider } from './upload-file-to-s3.provider';
-import { UploadFile } from '../interfaces/upload-file.interface';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Upload } from '../upload.entity';
 import { Repository } from 'typeorm';
-import { S3Provider } from './s3.provider';
-import { detectFileType, getFolder } from '../utils/file.util';
+import { DeleteFileFromS3Provider } from './delete-file-from-s3.provider';
+import { InitUploadDto } from '../dtos/init-upload.dto';
+import { InitUploadProvider } from './init-upload.provider';
+import { UploadStatus } from '../enums/upload-status.enum';
+import { MediaFileMappingService } from 'src/common/media-file-mapping/providers/media-file-mapping.service';
 
 @Injectable()
 export class UploadsService {
@@ -22,40 +19,86 @@ export class UploadsService {
     private readonly uploadRepository: Repository<Upload>,
 
     /**
-    /**
-     * Inject s3Provider
-     */
-    private readonly s3Provider: S3Provider,
-    /**
-     * Inject uploadFileToS3Provider
+     * Inject deleteFileFromS3Provider
      */
 
-    private readonly uploadFileToS3Provider: UploadFileToS3Provider,
+    private readonly deleteFileFromS3Provider: DeleteFileFromS3Provider,
+
+    /**
+     * Inject initUploadProvider
+     */
+    private readonly initUploadProvider: InitUploadProvider,
+
+    /**
+     * Inject mediaFileMappingService
+     */
+
+    private readonly mediaFileMappingService: MediaFileMappingService,
   ) {}
 
-  public async uploadFile(file: Express.Multer.File) {
+  async getUploads(): Promise<Upload[]> {
+    const uploads = await this.uploadRepository.find({
+      where: {
+        status: UploadStatus.COMPLETED,
+      },
+      order: {
+        createdAt: 'DESC',
+      },
+    });
+    return uploads.map((item) => this.mediaFileMappingService.mapFile(item));
+  }
+
+  async getOneById(id: number): Promise<Upload> {
+    const result = await this.uploadRepository.findOneBy({
+      id,
+    });
+
+    if (!result) {
+      throw new BadRequestException('Media not found');
+    }
+    return this.mediaFileMappingService.mapFile(result);
+  }
+
+  async delete(id: number) {
+    const file = await this.uploadRepository.findOne({
+      where: { id },
+    });
+
     if (!file) {
-      throw new BadRequestException('File is required');
+      throw new BadRequestException('File not found');
     }
 
     try {
-      // upload file to aws s3
-      const type = detectFileType(file.mimetype);
-      const folder = getFolder(type);
-      const name = await this.uploadFileToS3Provider.uploadFile(file, folder);
-      // generate to a new entry in the database
+      await this.deleteFileFromS3Provider.deleteFile(file.path);
+      await this.uploadRepository.delete(id);
 
-      const uploadFile: UploadFile = {
-        name,
-        path: `https://${this.s3Provider.getCloudFrontUrl()}/${name}`,
-        type,
-        mime: file.mimetype,
-        size: file.size,
+      return {
+        message: 'File deleted successfully',
       };
-      const upload = this.uploadRepository.create(uploadFile);
-      return await this.uploadRepository.save(upload);
-    } catch (error) {
-      throw new ConflictException(error);
+    } catch (error: unknown) {
+      if (error instanceof BadRequestException) {
+        throw new BadRequestException(error.message);
+      }
+
+      throw new BadRequestException('Failed to delete file');
     }
+  }
+
+  async initUpload(initUploadDto: InitUploadDto) {
+    return await this.initUploadProvider.initUpload(initUploadDto);
+  }
+
+  async confirmUpload(uploadId: number): Promise<Upload> {
+    const upload = await this.uploadRepository.findOneBy({ id: uploadId });
+
+    if (!upload) {
+      throw new BadRequestException('Upload not found');
+    }
+
+    upload.status = UploadStatus.COMPLETED;
+
+    const saved = await this.uploadRepository.save(upload);
+
+    return this.mediaFileMappingService.mapFile(saved);
   }
 }

@@ -1,7 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { SignInDto } from '../dtos/sign-in.dto';
 import { SignInProvider } from './sign-in.provider';
-import { RefreshTokenDto } from '../dtos/refresh-token.dto';
 import { RefreshTokensProvider } from './refresh-tokens.provider';
 import { SignupDto } from '../dtos/sign-up.dto';
 import { UsersService } from 'src/users/providers/users.service';
@@ -9,8 +8,10 @@ import { VerifyEmailProvider } from './verify-email.provider';
 import { User } from 'src/users/user.entity';
 import { GenerateVerificationTokenProvider } from './generate-verification-token.provider';
 import { TokenType } from '../enums/token-type.enum';
-import { ConfigService } from '@nestjs/config';
 import { MailService } from 'src/mail/providers/mail.service';
+import { ForgotPasswordProvider } from './forgot-password.provider';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
+import { ResetPasswordProvider } from './reset-password.provider';
 
 @Injectable()
 export class AuthService {
@@ -45,10 +46,16 @@ export class AuthService {
     private readonly generateVerificationTokenProvider: GenerateVerificationTokenProvider,
 
     /**
-     * Inject configService
+     * Inject forgotPasswordProvider
      */
 
-    private readonly configService: ConfigService,
+    private readonly forgotPasswordProvider: ForgotPasswordProvider,
+
+    /**
+     * Inject resetPasswordProvider
+     */
+
+    private readonly resetPasswordProvider: ResetPasswordProvider,
 
     /**
      * Inject mailService
@@ -64,8 +71,8 @@ export class AuthService {
     return this.usersService.create(signupDto);
   }
 
-  public async refreshTokens(refreshTokenDto: RefreshTokenDto) {
-    return await this.refreshTokensProvider.refreshTokens(refreshTokenDto);
+  public async refreshTokens(refreshToken: string) {
+    return await this.refreshTokensProvider.refreshTokens(refreshToken);
   }
 
   async sendVerificationEmail(user: User) {
@@ -74,13 +81,19 @@ export class AuthService {
       type: TokenType.EMAIL_VERIFICATION,
     });
 
-    const link = `${this.configService.get<string>('appConfig.fronEndUrl')}/auth/verify-email?token=${tokenRecord.token}`;
-
     await this.mailService.sendVerificationEmail(
       user,
-      link,
+      tokenRecord.token,
       tokenRecord.expiresAt,
     );
+  }
+
+  async forgotPassword(email: string) {
+    return await this.forgotPasswordProvider.forgotPassword(email);
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    return await this.resetPasswordProvider.resetPassword(resetPasswordDto);
   }
 
   public async verifyEmail(token: string) {

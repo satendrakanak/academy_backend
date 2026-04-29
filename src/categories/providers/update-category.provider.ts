@@ -9,6 +9,7 @@ import { Repository } from 'typeorm';
 import { PatchCategoryDto } from '../dtos/patch-category.dto';
 import { SlugProvider } from 'src/common/slug/providers/slug.provider';
 import { generateSlug } from 'src/common/utils/slug.util';
+import { UploadsService } from 'src/uploads/providers/uploads.service';
 
 @Injectable()
 export class UpdateCategoryProvider {
@@ -24,6 +25,12 @@ export class UpdateCategoryProvider {
      */
 
     private readonly slugProvider: SlugProvider,
+
+    /**
+     * Inject uploadsService
+     */
+
+    private readonly uploadsService: UploadsService,
   ) {}
 
   public async update(
@@ -51,7 +58,29 @@ export class UpdateCategoryProvider {
         );
       }
 
-      Object.assign(category, patchCategoryDto);
+      if (patchCategoryDto.imageId !== undefined) {
+        if (patchCategoryDto.imageId === null) {
+          category.image = null;
+        } else {
+          const image = await this.uploadsService.getOneById(
+            patchCategoryDto.imageId,
+          );
+
+          if (!image) {
+            throw new NotFoundException('Image not found');
+          }
+
+          category.image = image;
+        }
+      }
+
+      if (patchCategoryDto.imageAlt !== undefined) {
+        category.imageAlt = patchCategoryDto.imageAlt;
+      }
+
+      const { imageId, imageAlt, ...rest } = patchCategoryDto;
+
+      Object.assign(category, rest);
       category.slug = finalSlug;
 
       return await this.categoryRepository.save(category);

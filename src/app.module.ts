@@ -22,6 +22,23 @@ import { UploadsModule } from './uploads/uploads.module';
 import { MailModule } from './mail/mail.module';
 import { EmailTemplatesModule } from './email-templates/email-templates.module';
 import { BullModule } from '@nestjs/bullmq';
+import { TagsModule } from './tags/tags.module';
+import { ChaptersModule } from './chapters/chapters.module';
+import { MediaFileMappingModule } from './common/media-file-mapping/media-file-mapping.module';
+import { LecturesModule } from './lectures/lectures.module';
+import { AttachmentsModule } from './attachments/attachments.module';
+import { UserProgressModule } from './user-progress/user-progress.module';
+import { LocationModule } from './location/location.module';
+import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
+import { SettingsModule } from './settings/settings.module';
+import { CryptoModule } from './common/crypto/crypto.module';
+import { EnrollmentsModule } from './enrollments/enrollments.module';
+import { CouponsModule } from './coupons/coupons.module';
+import { RolesPermissionsModule } from './roles-permissions/roles-permissions.module';
+import { ProfilesModule } from './profiles/profiles.module';
+import { ArticlesModule } from './articles/articles.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -67,6 +84,23 @@ const ENV = process.env.NODE_ENV;
     UploadsModule,
     MailModule,
     EmailTemplatesModule,
+    TagsModule,
+    ChaptersModule,
+    MediaFileMappingModule,
+    LecturesModule,
+    AttachmentsModule,
+    UserProgressModule,
+    LocationModule,
+    OrdersModule,
+    PaymentsModule,
+    SettingsModule,
+    CryptoModule,
+    EnrollmentsModule,
+    CouponsModule,
+    RolesPermissionsModule,
+    ProfilesModule,
+    ArticlesModule,
+    TestimonialsModule,
   ],
   controllers: [AppController],
   providers: [

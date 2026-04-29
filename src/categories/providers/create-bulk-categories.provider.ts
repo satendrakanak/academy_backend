@@ -80,8 +80,12 @@ export class CreateBulkCategoriesProvider {
     } catch (error) {
       //Else Rollback Transaction
       await queryRunner.rollbackTransaction();
-      if (error.code === '23505') {
-        throw new ConflictException('Duplicate entry detected');
+      if (typeof error === 'object' && error !== null && 'code' in error) {
+        const err = error as { code?: string };
+
+        if (err.code === '23505') {
+          throw new ConflictException('Duplicate slug detected');
+        }
       }
 
       throw new ConflictException('Bulk create failed', {

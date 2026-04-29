@@ -4,6 +4,7 @@ import { TokenType } from '../enums/token-type.enum';
 import { UsersService } from 'src/users/providers/users.service';
 import { GenerateTokensProvider } from './generate-tokens.provider';
 import { LoginResponse } from 'src/common/interfaces/api-response.interface';
+import { MailService } from 'src/mail/providers/mail.service';
 
 @Injectable()
 export class VerifyEmailProvider {
@@ -24,6 +25,11 @@ export class VerifyEmailProvider {
      */
 
     private readonly generateTokensProvider: GenerateTokensProvider,
+    /**
+     * Inject mailService
+     */
+
+    private readonly mailService: MailService,
   ) {}
 
   async verify(token: string): Promise<LoginResponse> {
@@ -34,7 +40,7 @@ export class VerifyEmailProvider {
 
     const user = await this.usersService.markEmailVerified(record.userId);
     await this.verificationTokenService.delete(record);
-
+    await this.mailService.sendWelcomeEmail(user);
     return await this.generateTokensProvider.generateTokens(user);
   }
 }
