@@ -108,13 +108,12 @@ export class MediaFileMappingService {
       ...testimonial,
       avatar: this.mapFile(testimonial.avatar!),
       video: this.mapFile(testimonial.video!),
-      course: testimonial.course
-        ? {
-            ...testimonial.course,
-            image: this.mapFile(testimonial.course.image!),
-            video: this.mapFile(testimonial.course.video!),
-          }
-        : null,
+      courses:
+        testimonial.courses?.map((course) => ({
+          ...course,
+          image: this.mapFile(course.image!),
+          video: this.mapFile(course.video!),
+        })) ?? [],
     };
   }
 

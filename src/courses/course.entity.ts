@@ -135,7 +135,7 @@ export class Course {
   @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
   enrollments!: Enrollment[];
 
-  @OneToMany(() => Testimonial, (testimonial) => testimonial.course)
+  @ManyToMany(() => Testimonial, (testimonial) => testimonial.courses)
   testimonials!: Testimonial[];
 
   @CreateDateColumn()

@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsEnum,
   IsInt,
@@ -47,8 +48,9 @@ export class UpdateTestimonialDto {
 
   // 📚 Course assign
   @IsOptional()
-  @IsInt()
-  courseId?: number | null;
+  @IsArray()
+  @IsInt({ each: true })
+  courseIds?: number[];
 
   // ⭐ Rating
   @IsOptional()

@@ -43,7 +43,7 @@ export class TestimonialsService {
       this.testimonialsRepository,
       {
         where: this.buildWhere(getTestimonialsDto),
-        relations: ['avatar', 'video', 'course'],
+        relations: ['avatar', 'video', 'courses', 'courses.image', 'courses.video'],
         order: {
           priority: 'ASC',
           createdAt: 'DESC',
@@ -64,7 +64,7 @@ export class TestimonialsService {
       this.testimonialsRepository,
       {
         where: this.buildWhere(getTestimonialsDto, true),
-        relations: ['avatar', 'video', 'course'],
+        relations: ['avatar', 'video', 'courses', 'courses.image', 'courses.video'],
         order: {
           priority: 'ASC',
           createdAt: 'DESC',
@@ -84,7 +84,7 @@ export class TestimonialsService {
         isFeatured: true,
         status: TestimonialStatus.APPROVED,
       },
-      relations: ['avatar', 'video', 'course'],
+      relations: ['avatar', 'video', 'courses', 'courses.image', 'courses.video'],
       order: {
         priority: 'ASC',
         createdAt: 'DESC',
@@ -98,7 +98,7 @@ export class TestimonialsService {
   async findOneById(id: string): Promise<Testimonial> {
     const testimonial = await this.testimonialsRepository.findOne({
       where: { id },
-      relations: ['avatar', 'video', 'course'],
+      relations: ['avatar', 'video', 'courses', 'courses.image', 'courses.video'],
     });
 
     if (!testimonial) {
@@ -115,7 +115,7 @@ export class TestimonialsService {
         isActive: true,
         status: TestimonialStatus.APPROVED,
       },
-      relations: ['avatar', 'video', 'course'],
+      relations: ['avatar', 'video', 'courses', 'courses.image', 'courses.video'],
     });
 
     if (!testimonial) {
@@ -148,10 +148,14 @@ export class TestimonialsService {
       createTestimonialDto.videoId == null
         ? null
         : await this.uploadsService.getOneById(createTestimonialDto.videoId);
-    const course =
-      createTestimonialDto.courseId == null
-        ? null
-        : await this.coursesService.findOneById(createTestimonialDto.courseId);
+    const courses =
+      !createTestimonialDto.courseIds?.length
+        ? []
+        : await Promise.all(
+            createTestimonialDto.courseIds.map((courseId) =>
+              this.coursesService.findOneById(courseId),
+            ),
+          );
 
     const testimonial = this.testimonialsRepository.create({
       name: createTestimonialDto.name,
@@ -165,12 +169,12 @@ export class TestimonialsService {
       video: type === TestimonialType.VIDEO ? video : null,
       avatar: image,
       avatarAlt: createTestimonialDto.avatarAlt,
-      course,
+      courses,
       rating: createTestimonialDto.rating ?? 5,
-      status: TestimonialStatus.PENDING,
-      isActive: false,
-      isFeatured: false,
-      priority: 0,
+      status: createTestimonialDto.status ?? TestimonialStatus.PENDING,
+      isActive: createTestimonialDto.isActive ?? false,
+      isFeatured: createTestimonialDto.isFeatured ?? false,
+      priority: createTestimonialDto.priority ?? 0,
     });
 
     const saved = await this.testimonialsRepository.save(testimonial);
@@ -225,9 +229,11 @@ export class TestimonialsService {
     }
 
     if (getTestimonialsDto.courseId !== undefined) {
-      where.course = { id: getTestimonialsDto.courseId } as FindOptionsWhere<
-        NonNullable<Testimonial['course']>
-      >;
+      (where as any).courses = [
+        {
+          id: getTestimonialsDto.courseId,
+        },
+      ];
     }
 
     if (publicOnly) {
