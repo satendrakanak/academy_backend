@@ -17,6 +17,9 @@ import { HandleWebhookProvider } from './handle-webhook.provider';
 import { CreateOrderProvider } from './create-order.provider';
 import { ChangeOrderStatusProvider } from './change-order-status.provider';
 import { RetryPaymentProvider } from './retry-payment.provider';
+import { CouponsService } from 'src/coupons/providers/coupons.service';
+import { MediaFileMappingService } from 'src/common/media-file-mapping/providers/media-file-mapping.service';
+import { UpdateOrderStatusByAdminProvider } from './update-order-status-by-admin.provider';
 
 @Injectable()
 export class OrdersService {
@@ -55,7 +58,43 @@ export class OrdersService {
      */
 
     private readonly retryPaymentProvider: RetryPaymentProvider,
+
+    /**
+     * Inject couponsService
+     */
+    private readonly couponsService: CouponsService,
+
+    /**
+     * Inject mediaFileMappingService
+     */
+
+    private readonly mediaFileMappingService: MediaFileMappingService,
+
+    /**
+     * Inject updateOrderStatusByAdminProvider
+     */
+    private readonly updateOrderStatusByAdminProvider: UpdateOrderStatusByAdminProvider,
   ) {}
+
+  async findAll(): Promise<Order[]> {
+    return await this.orderRepository.find({
+      relations: ['items', 'items.course', 'user'],
+    });
+  }
+
+  async findOneById(id: number): Promise<Order> {
+    const order = await this.orderRepository.findOne({
+      where: { id },
+      relations: ['items', 'items.course', 'items.course.image', 'user'],
+    });
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    const mappedOrder = await this.mediaFileMappingService.mapOrder(order);
+
+    return mappedOrder;
+  }
 
   async create(createOrderDto: CreateOrderDto, user: ActiveUserData) {
     return await this.createOrderProvider.create(createOrderDto, user);
@@ -84,6 +123,7 @@ export class OrdersService {
       where: {
         orderId: verifyPaymentDto.razorpay_order_id,
       },
+      relations: ['items', 'items.course', 'user'],
     });
 
     if (!order) {
@@ -100,6 +140,10 @@ export class OrdersService {
       verifyPaymentDto.razorpay_order_id,
       verifyPaymentDto.razorpay_payment_id,
     );
+
+    // 🔥 7. Mark coupon used
+
+    await this.couponsService.applyCouponUsage(order);
 
     return { success: true, message: 'Payment verified' };
   }
@@ -118,5 +162,9 @@ export class OrdersService {
 
   async handleWebhook(rawBody: Buffer, signature: string) {
     return await this.handleWebhookProvider.handleWebhook(rawBody, signature);
+  }
+
+  async updateStatus(id: number, status: OrderStatus) {
+    return await this.updateOrderStatusByAdminProvider.updateStatus(id, status);
   }
 }

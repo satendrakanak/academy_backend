@@ -4,6 +4,8 @@ import {
   Controller,
   Get,
   Param,
+  ParseIntPipe,
+  Patch,
   Post,
   Req,
 } from '@nestjs/common';
@@ -15,6 +17,8 @@ import { VerifyPaymentDto } from './dtos/verify-payment.dto';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { AuthType } from 'src/auth/enums/auth-type.enum';
 import type { Request } from 'express';
+import { Order } from './order.entity';
+import { OrderStatus } from './enums/orderStatus.enum';
 
 @Controller('orders')
 export class OrdersController {
@@ -26,6 +30,23 @@ export class OrdersController {
     private readonly ordersService: OrdersService,
   ) {}
 
+  // 🔥 Get All Orders
+  @Get()
+  async findAll(): Promise<Order[]> {
+    return await this.ordersService.findAll();
+  }
+
+  // 🔥 Get My Orders
+  @Get('my-orders')
+  async getMyOrders(@ActiveUser() user: ActiveUserData): Promise<Order[]> {
+    return await this.ordersService.findUserOrders(user.sub);
+  }
+
+  @Get(':id')
+  async findOneById(@Param('id', ParseIntPipe) id: number): Promise<Order> {
+    return await this.ordersService.findOneById(id);
+  }
+
   // 🔥 Create Order
   @Post()
   async create(
@@ -33,12 +54,6 @@ export class OrdersController {
     @ActiveUser() user: ActiveUserData,
   ) {
     return await this.ordersService.create(createOrderDto, user);
-  }
-
-  // 🔥 Get My Orders
-  @Get('my-orders')
-  async getMyOrders(@ActiveUser() user: ActiveUserData) {
-    return await this.ordersService.findUserOrders(user.sub);
   }
 
   @Post('verify')
@@ -60,5 +75,13 @@ export class OrdersController {
     }
 
     return await this.ordersService.handleWebhook(req.body, signature);
+  }
+
+  @Patch(':id/status')
+  async updateStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('status') status: OrderStatus,
+  ) {
+    return await this.ordersService.updateStatus(id, status);
   }
 }

@@ -286,14 +286,18 @@ export class UsersService {
   }
 
   async getAllFaculty() {
-    return this.userRepository.find({
-      relations: ['roles', 'facultyProfile'],
+    const faculties = await this.userRepository.find({
+      relations: ['roles', 'facultyProfile', 'profile', 'avatar'],
       where: {
         roles: {
           name: 'faculty',
         },
       },
     });
+
+    const mapped = this.mediaFileMappingService.mapUsers(faculties);
+
+    return mapped;
   }
   async getFacultiesByIds(ids: number[]) {
     const users = await this.userRepository.find({

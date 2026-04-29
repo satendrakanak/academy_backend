@@ -2,6 +2,7 @@ import { Category } from 'src/categories/category.entity';
 import { Chapter } from 'src/chapters/chapter.entity';
 import { Enrollment } from 'src/enrollments/enrollment.entity';
 import { Tag } from 'src/tags/tag.entity';
+import { Testimonial } from 'src/testimonials/testimonial.entity';
 import { Upload } from 'src/uploads/upload.entity';
 import { User } from 'src/users/user.entity';
 import {
@@ -133,6 +134,9 @@ export class Course {
 
   @OneToMany(() => Enrollment, (enrollment) => enrollment.course)
   enrollments!: Enrollment[];
+
+  @OneToMany(() => Testimonial, (testimonial) => testimonial.course)
+  testimonials!: Testimonial[];
 
   @CreateDateColumn()
   createdAt!: Date;

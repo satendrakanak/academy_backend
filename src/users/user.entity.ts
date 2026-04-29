@@ -1,4 +1,5 @@
 import { Exclude } from 'class-transformer';
+import { Article } from 'src/articles/article.entity';
 import { Category } from 'src/categories/category.entity';
 import { Course } from 'src/courses/course.entity';
 import { Enrollment } from 'src/enrollments/enrollment.entity';
@@ -114,6 +115,9 @@ export class User {
   @ManyToMany(() => Role)
   @JoinTable()
   roles!: Role[];
+
+  @OneToMany(() => Article, (article) => article.author)
+  articles!: Article[];
 
   @CreateDateColumn()
   createdAt!: Date;

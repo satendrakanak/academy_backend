@@ -13,6 +13,7 @@ import { CategoryType } from './enums/categoryType.enum';
 import { User } from 'src/users/user.entity';
 import { Course } from 'src/courses/course.entity';
 import { Upload } from 'src/uploads/upload.entity';
+import { Article } from 'src/articles/article.entity';
 
 @Entity()
 @Index(['type'])
@@ -57,6 +58,11 @@ export class Category {
     onDelete: 'CASCADE',
   })
   courses?: Course[];
+
+  @ManyToMany(() => Article, (article) => article.categories, {
+    onDelete: 'CASCADE',
+  })
+  articles?: Course[];
 
   @ManyToOne(() => User, (user) => user.categories)
   createdBy!: User;

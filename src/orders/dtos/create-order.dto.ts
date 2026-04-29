@@ -38,7 +38,11 @@ export class CreateOrderDto {
 
   @IsOptional()
   @IsString()
-  couponCode?: string;
+  manualCouponCode?: string;
+
+  @IsOptional()
+  @IsString()
+  autoCouponCode?: string;
 
   @IsOptional()
   @IsString()

@@ -13,6 +13,8 @@ import { CreateOrderProvider } from './providers/create-order.provider';
 import { RetryPaymentProvider } from './providers/retry-payment.provider';
 import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
 import { CouponsModule } from 'src/coupons/coupons.module';
+import { UsersModule } from 'src/users/users.module';
+import { UpdateOrderStatusByAdminProvider } from './providers/update-order-status-by-admin.provider';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { CouponsModule } from 'src/coupons/coupons.module';
     SettingsModule,
     EnrollmentsModule,
     CouponsModule,
+    UsersModule,
   ],
   controllers: [OrdersController],
   providers: [
@@ -30,6 +33,7 @@ import { CouponsModule } from 'src/coupons/coupons.module';
     ChangeOrderStatusProvider,
     CreateOrderProvider,
     RetryPaymentProvider,
+    UpdateOrderStatusByAdminProvider,
   ],
   exports: [OrdersService],
 })

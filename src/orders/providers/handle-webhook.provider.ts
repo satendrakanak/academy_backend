@@ -59,7 +59,7 @@ export class HandleWebhookProvider {
 
     const order = await this.orderRepository.findOne({
       where: { paymentId: razorpayOrderId },
-      relations: ['items', 'items.course'],
+      relations: ['items', 'items.course', 'user'],
     });
 
     if (!order) return { status: 'ignored' };

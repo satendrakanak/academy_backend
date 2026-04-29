@@ -37,6 +37,8 @@ import { EnrollmentsModule } from './enrollments/enrollments.module';
 import { CouponsModule } from './coupons/coupons.module';
 import { RolesPermissionsModule } from './roles-permissions/roles-permissions.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { ArticlesModule } from './articles/articles.module';
+import { TestimonialsModule } from './testimonials/testimonials.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -97,6 +99,8 @@ const ENV = process.env.NODE_ENV;
     CouponsModule,
     RolesPermissionsModule,
     ProfilesModule,
+    ArticlesModule,
+    TestimonialsModule,
   ],
   controllers: [AppController],
   providers: [

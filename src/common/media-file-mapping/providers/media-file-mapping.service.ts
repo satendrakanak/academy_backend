@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { Article } from 'src/articles/article.entity';
 import { Category } from 'src/categories/category.entity';
 import { Chapter } from 'src/chapters/chapter.entity';
 import { Course } from 'src/courses/course.entity';
+import { Order } from 'src/orders/order.entity';
+import { Testimonial } from 'src/testimonials/testimonial.entity';
 import { S3Provider } from 'src/uploads/providers/s3.provider';
 import { User } from 'src/users/user.entity';
 
@@ -53,6 +56,17 @@ export class MediaFileMappingService {
     return courses.map((course) => this.mapCourse(course));
   }
 
+  mapArticle(article: Article) {
+    return {
+      ...article,
+      featuredImage: this.mapFile(article.featuredImage!),
+    };
+  }
+
+  mapArticles(articles: Article[]) {
+    return articles.map((article) => this.mapArticle(article));
+  }
+
   mapCategory(category: Category) {
     return {
       ...category,
@@ -74,5 +88,37 @@ export class MediaFileMappingService {
 
   mapUsers(users: User[]) {
     return users.map((user) => this.mapUser(user));
+  }
+
+  mapOrder(order: Order) {
+    return {
+      ...order,
+      items: order.items.map((item) => ({
+        ...item,
+        course: {
+          ...item.course,
+          image: this.mapFile(item.course.image!),
+        },
+      })),
+    };
+  }
+
+  mapTestimonial(testimonial: Testimonial) {
+    return {
+      ...testimonial,
+      avatar: this.mapFile(testimonial.avatar!),
+      video: this.mapFile(testimonial.video!),
+      course: testimonial.course
+        ? {
+            ...testimonial.course,
+            image: this.mapFile(testimonial.course.image!),
+            video: this.mapFile(testimonial.course.video!),
+          }
+        : null,
+    };
+  }
+
+  mapTestimonials(testimonials: Testimonial[]) {
+    return testimonials.map((testimonial) => this.mapTestimonial(testimonial));
   }
 }

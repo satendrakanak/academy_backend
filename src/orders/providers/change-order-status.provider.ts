@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OrderStatus } from '../enums/orderStatus.enum';
 import { EnrollmentsService } from 'src/enrollments/providers/enrollments.service';
+import { CouponsService } from 'src/coupons/providers/coupons.service';
 
 @Injectable()
 export class ChangeOrderStatusProvider {
@@ -19,6 +20,12 @@ export class ChangeOrderStatusProvider {
      */
 
     private readonly enrollmentsService: EnrollmentsService,
+
+    /**
+     * Inject couponsService
+     */
+
+    private readonly couponsService: CouponsService,
   ) {}
   async markAsPaid(
     orderId: number,
@@ -39,6 +46,36 @@ export class ChangeOrderStatusProvider {
     order.paidAt = new Date();
 
     await this.orderRepository.save(order);
+
+    // MANUAL
+    if (order.manualCouponCode) {
+      const manualCoupon = await this.couponsService.findByCode(
+        order.manualCouponCode,
+      );
+
+      if (manualCoupon) {
+        await this.couponsService.markCouponUsed(
+          manualCoupon.id,
+          order.user.id,
+          order,
+        );
+      }
+    }
+
+    // Auto
+    if (order.autoCouponCode) {
+      const autoCoupon = await this.couponsService.findByCode(
+        order.autoCouponCode,
+      );
+
+      if (autoCoupon) {
+        await this.couponsService.markCouponUsed(
+          autoCoupon.id,
+          order.user.id,
+          order,
+        );
+      }
+    }
 
     await this.enrollmentsService.enrollUser(order);
 

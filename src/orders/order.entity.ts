@@ -27,6 +27,12 @@ export class Order {
   @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
   discount!: number;
 
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  autoDiscount!: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  manualDiscount!: number;
+
   @Column({ type: 'varchar', length: 50, nullable: true })
   autoCouponCode?: string | null;
 

@@ -1,15 +1,8 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Coupon } from '../coupon.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CouponUsage } from '../coupon-usage.entity';
-import { CouponStatus } from '../enums/couponStatus.enum';
-import { CouponScope } from '../enums/couponScope.enum';
-import { CouponType } from '../enums/couponType.enum';
 import { Order } from 'src/orders/order.entity';
 import { CreateCouponProvider } from './create-coupon.provider';
 import { CreateCouponDto } from '../dtos/create-coupon.dto';
@@ -182,12 +175,35 @@ export class CouponsService {
     );
   }
 
+  async applyCouponUsage(order: Order) {
+    const couponCodes = [order.manualCouponCode, order.autoCouponCode].filter(
+      Boolean,
+    ); // null/undefined hata dega
+
+    for (const code of couponCodes) {
+      const coupon = await this.findByCode(code!);
+
+      if (!coupon) continue;
+
+      await this.markCouponUsed(coupon.id, order.user.id, order);
+    }
+  }
+
   async markCouponUsed(couponId: number, userId: number, order: Order) {
     const coupon = await this.couponRepository.findOne({
       where: { id: couponId },
     });
 
     if (!coupon) return;
+
+    const existing = await this.couponUsageRepository.findOne({
+      where: {
+        order: { id: order.id },
+        coupon: { id: couponId },
+      },
+    });
+
+    if (existing) return;
 
     // usage entry
     const usage = this.couponUsageRepository.create({

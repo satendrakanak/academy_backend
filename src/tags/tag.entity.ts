@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { Course } from 'src/courses/course.entity';
 import { User } from 'src/users/user.entity';
+import { Article } from 'src/articles/article.entity';
 
 @Entity()
 export class Tag {
@@ -40,6 +41,11 @@ export class Tag {
     onDelete: 'CASCADE',
   })
   courses?: Course[];
+
+  @ManyToMany(() => Article, (article) => article.tags, {
+    onDelete: 'CASCADE',
+  })
+  articles?: Article[];
 
   @ManyToOne(() => User, (user) => user.tags)
   createdBy!: User;

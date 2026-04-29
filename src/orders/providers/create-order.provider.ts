@@ -9,6 +9,7 @@ import { In, Repository } from 'typeorm';
 import { PaymentsService } from 'src/payments/providers/payments.service';
 import { OrderStatus } from '../enums/orderStatus.enum';
 import { CouponsService } from 'src/coupons/providers/coupons.service';
+import { UsersService } from 'src/users/providers/users.service';
 
 @Injectable()
 export class CreateOrderProvider {
@@ -41,6 +42,12 @@ export class CreateOrderProvider {
      * Inject couponsService
      */
     private readonly couponsService: CouponsService,
+
+    /**
+     * Inject usersService
+     */
+
+    private readonly usersService: UsersService,
   ) {}
   async create(createOrderDto: CreateOrderDto, user: ActiveUserData) {
     const courseIds = createOrderDto.items.map((i) => i.courseId);
@@ -83,10 +90,12 @@ export class CreateOrderProvider {
       user.sub,
       originalPrice,
       courseIds,
-      createOrderDto.couponCode, // manual coupon
+      createOrderDto.manualCouponCode, // manual coupon
     );
     const discount = pricing.totalDiscount;
     const totalAmount = pricing.finalAmount;
+    const autoDiscount = pricing.autoDiscount;
+    const manualDiscount = pricing.manualDiscount;
 
     const autoCouponCode = pricing.autoCoupon?.code || null;
     const manualCouponCode = pricing.manualCoupon?.code || null;
@@ -107,13 +116,19 @@ export class CreateOrderProvider {
       throw new BadRequestException('Price mismatch detected');
     }
 
+    // Find User
+
+    const userData = await this.usersService.findOneById(user.sub);
+
     // ===============================
     // 🔥 8. CREATE ORDER
     // ===============================
     const order = this.orderRepository.create({
-      user: { id: user.sub },
+      user: userData,
       subTotal,
       discount,
+      autoDiscount,
+      manualDiscount,
       tax,
       totalAmount,
       currency: 'INR',

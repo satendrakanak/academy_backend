@@ -34,7 +34,6 @@ export class GetRelatedCoursesProvider {
   async getRelatedCourses(courseId: number, user?: ActiveUserData) {
     const courses = await this.courseRepository.find({
       where: {
-        isFeatured: true,
         isPublished: true,
         id: Not(courseId),
       },
