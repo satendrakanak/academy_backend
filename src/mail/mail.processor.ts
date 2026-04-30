@@ -16,12 +16,13 @@ export class MailProcessor extends WorkerHost {
     this.logger.log(`📨 Processing job: ${job.name}`);
     try {
       if (job.name === 'send-email') {
-        const { to, subject, html } = job.data;
+        const { to, subject, html, attachments } = job.data;
 
         await this.mailerService.sendMail({
           to,
           subject,
           html,
+          attachments,
         });
 
         this.logger.log(`✅ Email sent to ${to}`);

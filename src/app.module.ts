@@ -39,6 +39,7 @@ import { RolesPermissionsModule } from './roles-permissions/roles-permissions.mo
 import { ProfilesModule } from './profiles/profiles.module';
 import { ArticlesModule } from './articles/articles.module';
 import { TestimonialsModule } from './testimonials/testimonials.module';
+import { CertificatesModule } from './certificates/certificates.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -101,6 +102,7 @@ const ENV = process.env.NODE_ENV;
     ProfilesModule,
     ArticlesModule,
     TestimonialsModule,
+    CertificatesModule,
   ],
   controllers: [AppController],
   providers: [

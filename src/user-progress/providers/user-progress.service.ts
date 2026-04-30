@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateLectureProgressDto } from '../dtos/update-lecture-progress.dto';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { WeeklyProgress } from '../interfaces/weekly-progress.interface';
+import { CertificatesService } from 'src/certificates/providers/certificates.service';
 
 @Injectable()
 export class UserProgressService {
@@ -14,6 +15,8 @@ export class UserProgressService {
      */
     @InjectRepository(UserProgres)
     private readonly userProgressRepository: Repository<UserProgres>,
+
+    private readonly certificatesService: CertificatesService,
   ) {}
 
   async getLectureProgress(user: ActiveUserData, lectureId: number) {
@@ -159,7 +162,15 @@ export class UserProgressService {
         record.isCompleted = true;
       }
 
-      return this.userProgressRepository.save(record);
+      const savedRecord = await this.userProgressRepository.save(record);
+
+      if (savedRecord.isCompleted) {
+        await this.certificatesService
+          .ensureFromLecture(userId, lectureId)
+          .catch(() => null);
+      }
+
+      return savedRecord;
     }
 
     const newRecord = this.userProgressRepository.create({
@@ -170,7 +181,15 @@ export class UserProgressService {
       isCompleted,
     });
 
-    return this.userProgressRepository.save(newRecord);
+    const savedRecord = await this.userProgressRepository.save(newRecord);
+
+    if (savedRecord.isCompleted) {
+      await this.certificatesService
+        .ensureFromLecture(userId, lectureId)
+        .catch(() => null);
+    }
+
+    return savedRecord;
   }
 
   async getCompletedCoursesCount(userId: number): Promise<number> {
