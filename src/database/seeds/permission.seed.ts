@@ -49,6 +49,10 @@ export async function seedPermissions(dataSource: DataSource) {
     'delete_permission',
     'view_settings',
     'update_settings',
+    'view_email_template',
+    'create_email_template',
+    'update_email_template',
+    'delete_email_template',
     'manage_users',
     'approve_faculty',
   ];

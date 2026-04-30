@@ -3,7 +3,6 @@ import {
   IsBoolean,
   IsString,
   IsOptional,
-  IsNotEmpty,
 } from 'class-validator';
 import { PaymentProvider } from '../enums/payment-provider.enum';
 import { PaymentMode } from '../enums/payment-mode.enum';
@@ -16,12 +15,12 @@ export class UpsertPaymentGatewayDto {
   mode!: PaymentMode;
 
   @IsString()
-  @IsNotEmpty()
-  keyId!: string;
+  @IsOptional()
+  keyId?: string;
 
   @IsString()
-  @IsNotEmpty()
-  keySecret!: string;
+  @IsOptional()
+  keySecret?: string;
 
   @IsString()
   @IsOptional()

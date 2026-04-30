@@ -2,8 +2,6 @@ import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { SettingsService } from './providers/settings.service';
 import { UpsertPaymentGatewayDto } from './dtos/upsert-payment-gateway.dto';
 import { PaymentProvider } from './enums/payment-provider.enum';
-import { Auth } from 'src/auth/decorators/auth.decorator';
-import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('settings')
 export class SettingsController {
@@ -15,7 +13,6 @@ export class SettingsController {
   ) {}
 
   @Post('gateway')
-  @Auth(AuthType.None)
   async createOrUpdate(
     @Body() upsertPaymentGatewayDto: UpsertPaymentGatewayDto,
   ) {

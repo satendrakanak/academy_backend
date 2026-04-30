@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { OrderStatus } from '../enums/orderStatus.enum';
 import { EnrollmentsService } from 'src/enrollments/providers/enrollments.service';
 import { CouponsService } from 'src/coupons/providers/coupons.service';
+import { OrderEmailProvider } from './email/order-email.provider';
 
 @Injectable()
 export class ChangeOrderStatusProvider {
@@ -26,6 +27,8 @@ export class ChangeOrderStatusProvider {
      */
 
     private readonly couponsService: CouponsService,
+
+    private readonly orderEmailProvider: OrderEmailProvider,
   ) {}
   async markAsPaid(
     orderId: number,
@@ -77,7 +80,12 @@ export class ChangeOrderStatusProvider {
       }
     }
 
-    await this.enrollmentsService.enrollUser(order);
+    const enrollments = await this.enrollmentsService.enrollUser(order);
+
+    await this.orderEmailProvider.sendPurchaseAndEnrollmentEmails(
+      order,
+      enrollments,
+    );
 
     return order;
   }

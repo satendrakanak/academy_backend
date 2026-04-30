@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PaymentGateway } from '../payment-gateway.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,11 +27,13 @@ export class SettingsService {
   ) {}
 
   async getAllGateways() {
-    const result = await this.paymentGatewayRepository.find();
+    const result = await this.paymentGatewayRepository.find({
+      order: { provider: 'ASC', mode: 'ASC' },
+    });
     if (!result) {
       throw new NotFoundException('No payment gateways found');
     }
-    return result;
+    return result.map((gateway) => this.toAdminGateway(gateway));
   }
 
   async getAllActiveGateways() {
@@ -53,11 +59,22 @@ export class SettingsService {
       },
     });
 
+    const isNewGateway = !entity;
+
     if (!entity) {
       entity = this.paymentGatewayRepository.create({
         provider: upsertPaymentGatewayDto.provider,
         mode: upsertPaymentGatewayDto.mode,
       });
+    }
+
+    if (
+      isNewGateway &&
+      (!upsertPaymentGatewayDto.keyId || !upsertPaymentGatewayDto.keySecret)
+    ) {
+      throw new BadRequestException(
+        'Key ID and key secret are required for a new payment gateway',
+      );
     }
 
     // 🔐 encrypt only if provided
@@ -78,6 +95,11 @@ export class SettingsService {
         upsertPaymentGatewayDto.webhookSecret,
       );
     }
+
+    if (upsertPaymentGatewayDto.webhookUrl !== undefined) {
+      entity.webhookUrl = upsertPaymentGatewayDto.webhookUrl;
+    }
+
     if (upsertPaymentGatewayDto.isActive) {
       await this.paymentGatewayRepository.update(
         { provider: upsertPaymentGatewayDto.provider },
@@ -88,7 +110,9 @@ export class SettingsService {
       entity.isActive = false;
     }
 
-    return this.paymentGatewayRepository.save(entity);
+    const savedGateway = await this.paymentGatewayRepository.save(entity);
+
+    return this.toAdminGateway(savedGateway);
   }
 
   async getActiveGateway(provider: PaymentProvider) {
@@ -142,6 +166,35 @@ export class SettingsService {
         return 'PayPal';
       default:
         return provider;
+    }
+  }
+
+  private toAdminGateway(gateway: PaymentGateway) {
+    return {
+      id: gateway.id,
+      provider: gateway.provider,
+      displayName: this.getDisplayName(gateway.provider),
+      mode: gateway.mode,
+      isActive: gateway.isActive,
+      keyIdPreview: this.getMaskedSecret(gateway.keyIdEnc),
+      hasKeySecret: Boolean(gateway.keySecretEnc),
+      hasWebhookSecret: Boolean(gateway.webhookSecretEnc),
+      webhookUrl: gateway.webhookUrl || null,
+      createdAt: gateway.createdAt,
+      updatedAt: gateway.updatedAt,
+    };
+  }
+
+  private getMaskedSecret(encryptedValue?: string | null) {
+    if (!encryptedValue) return null;
+
+    try {
+      const decryptedValue = this.cryptoService.decrypt(encryptedValue);
+      if (!decryptedValue) return null;
+
+      return `${decryptedValue.slice(0, 6)}****${decryptedValue.slice(-4)}`;
+    } catch {
+      return '********';
     }
   }
 }
