@@ -179,6 +179,36 @@ export class UsersService {
     return await this.findOneByEmailProvider.findOneByEmail(email);
   }
 
+  async getFacultyProfile(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: [
+        'roles',
+        'profile',
+        'facultyProfile',
+        'avatar',
+        'coverImage',
+        'taughtCourses',
+        'taughtCourses.image',
+        'taughtCourses.faculties',
+        'taughtCourses.faculties.avatar',
+        'taughtCourses.createdBy',
+      ],
+    });
+
+    if (!user || !user.roles.some((role) => role.name === 'faculty')) {
+      throw new NotFoundException('Faculty not found');
+    }
+
+    const mappedUser = this.mediaFileMappingService.mapUser(user);
+    mappedUser.taughtCourses =
+      mappedUser.taughtCourses?.map((course) =>
+        this.mediaFileMappingService.mapCourse(course),
+      ) || [];
+
+    return mappedUser;
+  }
+
   async getUserWithProfile(userId: number): Promise<User> {
     const user = await this.userRepository.findOne({
       where: { id: userId },

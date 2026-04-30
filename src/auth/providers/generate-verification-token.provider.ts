@@ -20,7 +20,8 @@ export class GenerateVerificationTokenProvider {
     );
 
     const token =
-      generateVerficationTokenDto.type === TokenType.CHECKOUT_EMAIL_OTP
+      generateVerficationTokenDto.type === TokenType.CHECKOUT_EMAIL_OTP ||
+      generateVerficationTokenDto.type === TokenType.EMAIL_OTP_VERIFICATION
         ? Math.floor(100000 + Math.random() * 900000).toString()
         : randomUUID();
 

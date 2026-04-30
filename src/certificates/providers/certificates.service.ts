@@ -8,7 +8,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { randomUUID } from 'crypto';
 import { Repository } from 'typeorm';
-import { Chapter } from 'src/chapters/chapter.entity';
 import { Course } from 'src/courses/course.entity';
 import { EmailTemplatesService } from 'src/email-templates/providers/email-templates.service';
 import { Lecture } from 'src/lectures/lecture.entity';
@@ -24,6 +23,7 @@ import { User } from 'src/users/user.entity';
 import { Certificate } from '../certificate.entity';
 import { CertificateResponse } from '../interfaces/certificate-response.interface';
 import { CertificateTemplateProvider } from './certificate-template.provider';
+import { renderCertificatePdf } from './pdf-renderer.util';
 
 const CERTIFICATE_EMAIL_TEMPLATE = 'course_certificate_issued';
 
@@ -114,13 +114,13 @@ export class CertificatesService {
       relations: ['user', 'course', 'file'],
     });
 
-    if (existing) {
-      if (options.sendEmail && !existing.emailedAt) {
-        await this.sendCertificateEmail(existing);
-      }
+    // if (existing) {
+    //   if (options.sendEmail && !existing.emailedAt) {
+    //     await this.sendCertificateEmail(existing);
+    //   }
 
-      return existing;
-    }
+    //   return existing;
+    // }
 
     const [user, course] = await Promise.all([
       this.userRepository.findOne({
@@ -153,14 +153,14 @@ export class CertificatesService {
       ? this.mediaFileMappingService.mapFile(user.avatar).path
       : null;
 
-    const svg = this.certificateTemplateProvider.renderSvg({
+    const pdfBuffer = await renderCertificatePdf({
       user,
       course,
       certificateNumber,
       issuedAt,
       avatarUrl,
     });
-    const file = await this.uploadCertificate(svg, {
+    const file = await this.uploadCertificate(pdfBuffer, {
       userId,
       courseId,
       certificateNumber,
@@ -177,7 +177,7 @@ export class CertificatesService {
     );
 
     if (options.sendEmail !== false) {
-      await this.sendCertificateEmail(certificate, Buffer.from(svg, 'utf8'));
+      await this.sendCertificateEmail(certificate, pdfBuffer);
     }
 
     return certificate;
@@ -238,28 +238,29 @@ export class CertificatesService {
   }
 
   private async uploadCertificate(
-    svg: string,
+    pdfBuffer: Buffer,
     params: { userId: number; courseId: number; certificateNumber: string },
   ): Promise<Upload> {
-    const key = `certificates/course-${params.courseId}/user-${params.userId}/${params.certificateNumber}.svg`;
-    const body = Buffer.from(svg, 'utf8');
+    const key = `certificates/course-${params.courseId}/user-${params.userId}/${params.certificateNumber}.pdf`;
+    const s3Client = await this.s3Provider.getClient();
+    const bucket = await this.s3Provider.getBucket();
 
-    await this.s3Provider.getClient().send(
+    await s3Client.send(
       new PutObjectCommand({
-        Bucket: this.s3Provider.getBucket(),
+        Bucket: bucket,
         Key: key,
-        Body: body,
-        ContentType: 'image/svg+xml',
+        Body: pdfBuffer,
+        ContentType: 'application/pdf',
       }),
     );
 
     return this.uploadRepository.save(
       this.uploadRepository.create({
-        name: `${params.certificateNumber}.svg`,
+        name: `${params.certificateNumber}.pdf`,
         path: key,
-        type: FileTypes.IMAGE,
-        mime: 'image/svg+xml',
-        size: body.length,
+        type: FileTypes.PDF,
+        mime: 'application/pdf',
+        size: pdfBuffer.length,
         status: UploadStatus.COMPLETED,
       }),
     );
@@ -291,15 +292,15 @@ export class CertificatesService {
 
       const mailAttachment = attachment
         ? {
-            filename: `${certificate.certificateNumber}.svg`,
+            filename: `${certificate.certificateNumber}.pdf`,
             content: attachment.toString('base64'),
             encoding: 'base64',
-            contentType: 'image/svg+xml',
+            contentType: 'application/pdf',
           }
         : {
-            filename: `${certificate.certificateNumber}.svg`,
+            filename: `${certificate.certificateNumber}.pdf`,
             path: downloadUrl,
-            contentType: 'image/svg+xml',
+            contentType: 'application/pdf',
           };
 
       await this.mailService.sendMail({

@@ -6,6 +6,7 @@ import { OrderStatus } from '../enums/orderStatus.enum';
 import { EnrollmentsService } from 'src/enrollments/providers/enrollments.service';
 import { CouponsService } from 'src/coupons/providers/coupons.service';
 import { OrderEmailProvider } from './email/order-email.provider';
+import { CartsService } from 'src/carts/providers/carts.service';
 
 @Injectable()
 export class ChangeOrderStatusProvider {
@@ -29,6 +30,7 @@ export class ChangeOrderStatusProvider {
     private readonly couponsService: CouponsService,
 
     private readonly orderEmailProvider: OrderEmailProvider,
+    private readonly cartsService: CartsService,
   ) {}
   async markAsPaid(
     orderId: number,
@@ -86,6 +88,7 @@ export class ChangeOrderStatusProvider {
       order,
       enrollments,
     );
+    await this.cartsService.clear(order.user.id);
 
     return order;
   }
@@ -97,7 +100,7 @@ export class ChangeOrderStatusProvider {
   ) {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, orderId: razorpayOrderId },
-      relations: ['items'],
+      relations: ['items', 'items.course', 'user'],
     });
 
     if (!order) {
@@ -109,6 +112,8 @@ export class ChangeOrderStatusProvider {
     order.failedAt = new Date();
 
     await this.orderRepository.save(order);
+
+    await this.orderEmailProvider.sendPaymentFailedEmail(order);
 
     return order;
   }

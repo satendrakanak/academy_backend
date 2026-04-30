@@ -8,6 +8,7 @@ import { SendVerificationEmailProvider } from './send-verification-email.provide
 import { SendForgotPasswordEmailProvider } from './send-forgot-password-email.provider';
 import { SendResetPasswordEmailProvider } from './send-reset-password-email.provider';
 import { SendCheckoutOtpEmailProvider } from './send-checkout-otp-email.provider';
+import { SendRegistrationOtpEmailProvider } from './send-registration-otp-email.provider';
 
 @Injectable()
 export class MailService {
@@ -41,6 +42,7 @@ export class MailService {
      */
     private readonly sendResetPasswordEmailProvider: SendResetPasswordEmailProvider,
     private readonly sendCheckoutOtpEmailProvider: SendCheckoutOtpEmailProvider,
+    private readonly sendRegistrationOtpEmailProvider: SendRegistrationOtpEmailProvider,
   ) {}
 
   async sendMail(data: SendEmailJobData): Promise<void> {
@@ -92,6 +94,18 @@ export class MailService {
     expiresAt: Date,
   ): Promise<void> {
     await this.sendCheckoutOtpEmailProvider.sendCheckoutOtpEmail(
+      user,
+      code,
+      expiresAt,
+    );
+  }
+
+  async sendRegistrationOtpEmail(
+    user: User,
+    code: string,
+    expiresAt: Date,
+  ): Promise<void> {
+    await this.sendRegistrationOtpEmailProvider.sendRegistrationOtpEmail(
       user,
       code,
       expiresAt,

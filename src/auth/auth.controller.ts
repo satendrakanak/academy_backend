@@ -26,6 +26,8 @@ import { StartCheckoutVerificationDto } from './dtos/start-checkout-verification
 import { VerifyCheckoutOtpDto } from './dtos/verify-checkout-otp.dto';
 import { StartCheckoutVerificationProvider } from './providers/start-checkout-verification.provider';
 import { VerifyCheckoutOtpProvider } from './providers/verify-checkout-otp.provider';
+import { StartSignupVerificationProvider } from './providers/start-signup-verification.provider';
+import { VerifySignupOtpProvider } from './providers/verify-signup-otp.provider';
 
 @Controller('auth')
 export class AuthController {
@@ -42,6 +44,8 @@ export class AuthController {
 
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
+    private readonly startSignupVerificationProvider: StartSignupVerificationProvider,
+    private readonly verifySignupOtpProvider: VerifySignupOtpProvider,
     private readonly startCheckoutVerificationProvider: StartCheckoutVerificationProvider,
     private readonly verifyCheckoutOtpProvider: VerifyCheckoutOtpProvider,
   ) {}
@@ -76,12 +80,34 @@ export class AuthController {
   @Post('sign-up')
   public async signUp(
     @Body() signupDto: SignupDto,
-  ): Promise<ApiResponse<User>> {
-    const result = await this.authService.signUp(signupDto);
+  ): Promise<ApiResponse<{ email: string; maskedEmail: string; isExistingUser: boolean }>> {
+    const result = await this.startSignupVerificationProvider.start(signupDto);
     return {
       success: true,
-      message: 'User registered successfully',
+      message: 'Verification code sent to your email',
       data: result,
+    };
+  }
+
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @Post('sign-up/verify-otp')
+  async verifySignupOtp(
+    @Body() verifyCheckoutOtpDto: VerifyCheckoutOtpDto,
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const { accessToken, refreshToken } =
+      await this.verifySignupOtpProvider.verify(
+        verifyCheckoutOtpDto.email,
+        verifyCheckoutOtpDto.code,
+      );
+
+    res.cookie('accessToken', accessToken, httpOnlyCookieOptions);
+    res.cookie('refreshToken', refreshToken, httpOnlyCookieOptions);
+
+    return {
+      success: true,
+      message: 'Email verified successfully',
     };
   }
 

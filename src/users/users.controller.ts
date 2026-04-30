@@ -49,6 +49,14 @@ export class UsersController {
     return await this.usersService.getAllFaculty();
   }
 
+  @Auth(AuthType.None)
+  @Get('faculty-profile/:id')
+  public async getFacultyProfile(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<User> {
+    return await this.usersService.getFacultyProfile(id);
+  }
+
   @Get('dashboard-stats/:id')
   getDashboardStats(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getDashboardStats(id);

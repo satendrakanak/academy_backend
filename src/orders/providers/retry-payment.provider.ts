@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaymentsService } from 'src/payments/providers/payments.service';
 import { OrderStatus } from '../enums/orderStatus.enum';
+import { OrderEmailProvider } from './email/order-email.provider';
 
 @Injectable()
 export class RetryPaymentProvider {
@@ -23,6 +24,7 @@ export class RetryPaymentProvider {
      * */
 
     private readonly paymentsService: PaymentsService,
+    private readonly orderEmailProvider: OrderEmailProvider,
   ) {}
   async retryPayment(orderId: number) {
     const order = await this.orderRepository.findOne({
@@ -53,8 +55,10 @@ export class RetryPaymentProvider {
     order.status = OrderStatus.PENDING;
 
     await this.orderRepository.save(order);
+    await this.orderEmailProvider.sendRetryPaymentEmail(order);
 
     return {
+      orderId: order.id,
       razorpayOrderId: razorpayOrder.id,
       amount: razorpayOrder.amount,
       currency: razorpayOrder.currency,

@@ -10,6 +10,8 @@ import { SendVerificationEmailProvider } from './providers/send-verification-ema
 import { SendForgotPasswordEmailProvider } from './providers/send-forgot-password-email.provider';
 import { SendResetPasswordEmailProvider } from './providers/send-reset-password-email.provider';
 import { SendCheckoutOtpEmailProvider } from './providers/send-checkout-otp-email.provider';
+import { SendRegistrationOtpEmailProvider } from './providers/send-registration-otp-email.provider';
+import { SettingsModule } from 'src/settings/settings.module';
 
 @Global()
 @Module({
@@ -40,6 +42,7 @@ import { SendCheckoutOtpEmailProvider } from './providers/send-checkout-otp-emai
       name: 'mail',
     }),
     EmailTemplatesModule,
+    SettingsModule,
   ],
   providers: [
     MailService,
@@ -49,6 +52,7 @@ import { SendCheckoutOtpEmailProvider } from './providers/send-checkout-otp-emai
     SendForgotPasswordEmailProvider,
     SendResetPasswordEmailProvider,
     SendCheckoutOtpEmailProvider,
+    SendRegistrationOtpEmailProvider,
   ],
   exports: [MailService],
 })

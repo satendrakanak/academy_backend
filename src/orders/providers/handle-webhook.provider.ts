@@ -58,7 +58,7 @@ export class HandleWebhookProvider {
     const paymentId = payment.id;
 
     const order = await this.orderRepository.findOne({
-      where: { paymentId: razorpayOrderId },
+      where: { orderId: razorpayOrderId },
       relations: ['items', 'items.course', 'user'],
     });
 
@@ -66,7 +66,8 @@ export class HandleWebhookProvider {
 
     if (
       order.status === OrderStatus.PAID ||
-      order.status === OrderStatus.FAILED
+      order.status === OrderStatus.FAILED ||
+      order.status === OrderStatus.CANCELLED
     ) {
       return { status: 'already_processed' };
     }

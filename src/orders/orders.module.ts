@@ -17,6 +17,7 @@ import { UsersModule } from 'src/users/users.module';
 import { UpdateOrderStatusByAdminProvider } from './providers/update-order-status-by-admin.provider';
 import { EmailTemplatesModule } from 'src/email-templates/email-templates.module';
 import { OrderEmailProvider } from './providers/email/order-email.provider';
+import { CartsModule } from 'src/carts/carts.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { OrderEmailProvider } from './providers/email/order-email.provider';
     CouponsModule,
     UsersModule,
     EmailTemplatesModule,
+    CartsModule,
   ],
   controllers: [OrdersController],
   providers: [

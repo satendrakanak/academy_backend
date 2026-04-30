@@ -20,6 +20,8 @@ import { ResetPasswordProvider } from './providers/reset-password.provider';
 import { User } from 'src/users/user.entity';
 import { StartCheckoutVerificationProvider } from './providers/start-checkout-verification.provider';
 import { VerifyCheckoutOtpProvider } from './providers/verify-checkout-otp.provider';
+import { StartSignupVerificationProvider } from './providers/start-signup-verification.provider';
+import { VerifySignupOtpProvider } from './providers/verify-signup-otp.provider';
 
 @Module({
   imports: [
@@ -44,6 +46,8 @@ import { VerifyCheckoutOtpProvider } from './providers/verify-checkout-otp.provi
     VerificationTokenService,
     ForgotPasswordProvider,
     ResetPasswordProvider,
+    StartSignupVerificationProvider,
+    VerifySignupOtpProvider,
     StartCheckoutVerificationProvider,
     VerifyCheckoutOtpProvider,
   ],

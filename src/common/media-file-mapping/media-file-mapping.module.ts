@@ -1,10 +1,11 @@
 import { Global, Module } from '@nestjs/common';
 import { MediaFileMappingService } from './providers/media-file-mapping.service';
-import { S3Provider } from 'src/uploads/providers/s3.provider';
+import { UploadsModule } from 'src/uploads/uploads.module';
 
 @Global()
 @Module({
-  providers: [MediaFileMappingService, S3Provider],
+  imports: [UploadsModule],
+  providers: [MediaFileMappingService],
   exports: [MediaFileMappingService],
 })
 export class MediaFileMappingModule {}

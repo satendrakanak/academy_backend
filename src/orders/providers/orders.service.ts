@@ -152,6 +152,51 @@ export class OrdersService {
     return await this.retryPaymentProvider.retryPayment(orderId);
   }
 
+  async cancelPendingOrder(id: number, user: ActiveUserData) {
+    const order = await this.orderRepository.findOne({
+      where: { id, user: { id: user.sub } },
+      relations: ['items', 'items.course', 'user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return this.updateOrderStatusByAdminProvider.updateStatus(
+      order.id,
+      OrderStatus.CANCELLED,
+    );
+  }
+
+  async markPaymentFailed(
+    id: number,
+    user: ActiveUserData,
+    paymentId?: string | null,
+  ) {
+    const order = await this.orderRepository.findOne({
+      where: { id, user: { id: user.sub } },
+      relations: ['items', 'items.course', 'user'],
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    if (order.status === OrderStatus.PAID) {
+      throw new BadRequestException('Paid order cannot be marked as failed');
+    }
+
+    order.paymentId = paymentId || order.paymentId;
+
+    await this.orderRepository.save(order);
+
+    return this.changeOrderStatusProvider.markAsFailed(
+      order.id,
+      order.orderId!,
+      order.paymentId || 'FAILED',
+    );
+  }
+
   async findUserOrders(userId: number) {
     return this.orderRepository.find({
       where: { user: { id: userId } },
