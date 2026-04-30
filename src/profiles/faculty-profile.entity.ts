@@ -30,6 +30,15 @@ export class FacultyProfile {
   @Column({ nullable: true })
   linkedin!: string;
 
+  @Column({ nullable: true })
+  instagram!: string;
+
+  @Column({ nullable: true })
+  twitter!: string;
+
+  @Column({ nullable: true })
+  youtube!: string;
+
   @Column({ default: false })
   isApproved!: boolean;
 }

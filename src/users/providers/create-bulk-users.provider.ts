@@ -62,8 +62,14 @@ export class CreateBulkUsersProvider {
     try {
       const newUsers = await Promise.all(
         createBulkUsersDto.users.map(async (user) => {
-          const role =
-            await this.rolesPermissionsService.findRoleByName('student');
+          const roles = user.roleIds?.length
+            ? await this.rolesPermissionsService.findByIds(user.roleIds)
+            : [await this.rolesPermissionsService.findRoleByName('student')];
+
+          const hasStudent = roles.some((role) => role.name === 'student');
+          if (!hasStudent) {
+            throw new ConflictException('Every imported user must include student role');
+          }
           const username = await this.generateUsernameProvider.generateUsername(
             user.email,
           );
@@ -77,7 +83,7 @@ export class CreateBulkUsersProvider {
               ? ({ id: user.coverImageId } as Upload)
               : undefined,
             username,
-            roles: [role],
+            roles,
             password: await this.hashingProvider.hashPassword(user.password),
           });
         }),

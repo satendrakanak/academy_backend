@@ -87,7 +87,15 @@ export class CreateUserProvider {
         }
       }
 
-      const role = await this.rolesPermissionsService.findRoleByName('student');
+      const roles = createUserDto.roleIds?.length
+        ? await this.rolesPermissionsService.findByIds(createUserDto.roleIds)
+        : [await this.rolesPermissionsService.findRoleByName('student')];
+
+      const hasStudent = roles.some((role) => role.name === 'student');
+      if (!hasStudent) {
+        throw new ConflictException('User must always have student role');
+      }
+
       const username = await this.generateUsernameProvider.generateUsername(
         createUserDto.email,
       );
@@ -107,7 +115,7 @@ export class CreateUserProvider {
           ? ({ id: createUserDto.coverImageId } as Upload)
           : undefined,
         username,
-        roles: [role],
+        roles,
         password: await this.hashingProvider.hashPassword(
           createUserDto.password,
         ),
