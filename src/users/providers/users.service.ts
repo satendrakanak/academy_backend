@@ -36,6 +36,7 @@ import { MediaFileMappingService } from 'src/common/media-file-mapping/providers
 import { UpdateFacultyProfileDto } from 'src/profiles/dtos/update.faculty-profile.dto';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { Brackets } from 'typeorm';
+import { CreateUserOptions } from '../interfaces/create-user-options.interface';
 
 @Injectable()
 export class UsersService {
@@ -200,8 +201,13 @@ export class UsersService {
   public async create(
     createUserDto: CreateUserDto,
     currentUser?: ActiveUserData,
+    options?: CreateUserOptions,
   ): Promise<User> {
-    return await this.createUserprovider.create(createUserDto, currentUser);
+    return await this.createUserprovider.create(
+      createUserDto,
+      currentUser,
+      options,
+    );
   }
 
   public async createMany(

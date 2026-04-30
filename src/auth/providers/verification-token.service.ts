@@ -4,6 +4,7 @@ import { VerificationToken } from '../verification-token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateVerficationTokenDto } from '../dtos/create-verification-token.dto';
 import { GetValidTokenDto } from '../dtos/get-valid-token.dto';
+import { TokenType } from '../enums/token-type.enum';
 
 @Injectable()
 export class VerificationTokenService {
@@ -55,5 +56,15 @@ export class VerificationTokenService {
   async markUsed(token: VerificationToken): Promise<VerificationToken> {
     token.usedAt = new Date();
     return await this.verficationTokenRepository.save(token);
+  }
+
+  async deletePendingTokensForUser(
+    userId: number,
+    type: TokenType,
+  ): Promise<void> {
+    await this.verficationTokenRepository.delete({
+      userId,
+      type,
+    });
   }
 }

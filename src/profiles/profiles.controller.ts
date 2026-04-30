@@ -3,6 +3,8 @@ import { ProfilesService } from './providers/profiles.service';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import type { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('profiles')
 export class ProfilesController {
@@ -27,6 +29,7 @@ export class ProfilesController {
     return this.profilesService.updateProfile(user.sub, updateProfileDto);
   }
 
+  @Auth(AuthType.None)
   @Get(':username')
   getPublicProfile(@Param('username') username: string) {
     return this.profilesService.getPublicProfile(username);

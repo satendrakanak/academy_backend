@@ -17,6 +17,8 @@ import { Paginated } from 'src/common/pagination/interfaces/paginated.interface'
 import { Article } from './article.entity';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import { PatchArticleDto } from './dtos/patch-article.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('articles')
 export class ArticlesController {
@@ -27,6 +29,7 @@ export class ArticlesController {
     private readonly articlesService: ArticlesService,
   ) {}
 
+  @Auth(AuthType.Optional)
   @Get()
   async findAll(
     @Query() getArticlesDto: GetArticlesDto,
@@ -35,11 +38,13 @@ export class ArticlesController {
     return await this.articlesService.findAll(getArticlesDto, user);
   }
 
+  @Auth(AuthType.None)
   @Get('featured')
   async getFeaturedArticles(): Promise<Article[]> {
     return await this.articlesService.getFeaturedArticles();
   }
 
+  @Auth(AuthType.None)
   @Get('related/:id')
   async getRelatedArticles(
     @Param('id', ParseIntPipe) id: number,
@@ -47,11 +52,13 @@ export class ArticlesController {
     return await this.articlesService.getRelatedArticles(id);
   }
 
+  @Auth(AuthType.None)
   @Get('slug/:slug')
   async findOneBySlug(@Param('slug') slug: string): Promise<Article> {
     return await this.articlesService.findOneBySlug(slug);
   }
 
+  @Auth(AuthType.None)
   @Get(':id')
   async findOneById(@Param('id', ParseIntPipe) id: number): Promise<Article> {
     return await this.articlesService.findOneById(id);

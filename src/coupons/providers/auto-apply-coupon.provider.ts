@@ -28,7 +28,7 @@ export class AutoApplyCouponProvider {
     private readonly applyCouponProvider: ApplyCouponProvider,
   ) {}
   async autoApplyCoupon(
-    userId: number,
+    userId: number | undefined,
     cartTotal: number,
     courseIds: number[],
   ) {

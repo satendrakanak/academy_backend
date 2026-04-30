@@ -44,7 +44,7 @@ export class FindOneBySlugProvider {
 
   async findOneBySlug(
     slug: string,
-    user: ActiveUserData,
+    user?: ActiveUserData,
   ): Promise<CourseWithAccess> {
     const course = await this.courseRepository
       .createQueryBuilder('course')

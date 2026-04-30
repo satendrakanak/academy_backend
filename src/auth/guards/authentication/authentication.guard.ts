@@ -31,6 +31,28 @@ export class AuthenticationGuard implements CanActivate {
     this.authTypeGuardMap = {
       [AuthType.Bearer]: this.accessTokenGuard,
       [AuthType.None]: { canActivate: () => true },
+      [AuthType.Optional]: {
+        canActivate: async (context: ExecutionContext) => {
+          const request = context.switchToHttp().getRequest();
+          const hasToken =
+            Boolean(request.cookies?.accessToken) ||
+            Boolean(request.headers.authorization);
+
+          if (!hasToken) {
+            return true;
+          }
+
+          try {
+            return await Promise.resolve(
+              this.accessTokenGuard.canActivate(context),
+            );
+          } catch {
+            // Optional routes are public-first. A stale token should not break
+            // the website; it simply means the request is handled as anonymous.
+            return true;
+          }
+        },
+      },
     };
   }
 

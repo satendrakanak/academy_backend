@@ -108,7 +108,7 @@ export class CouponsService {
   }
 
   async applyCoupon(
-    userId: number,
+    userId: number | undefined,
     code: string,
     cartTotal: number,
     courseIds: number[],
@@ -122,7 +122,7 @@ export class CouponsService {
   }
 
   async autoApplyCoupon(
-    userId: number,
+    userId: number | undefined,
     cartTotal: number,
     courseIds: number[],
   ) {
@@ -134,7 +134,7 @@ export class CouponsService {
   }
 
   async autoApplyBulk(
-    userId: number,
+    userId: number | undefined,
     courses: { id: number; price: number }[],
   ) {
     return await this.autoApplyBulkCouponProvider.autoApplyBulk(
@@ -145,7 +145,7 @@ export class CouponsService {
 
   async validateCoupon(
     coupon: Coupon,
-    userId: number,
+    userId: number | undefined,
     cartTotal: number,
     courseIds: number[],
   ) {

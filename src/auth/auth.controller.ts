@@ -22,6 +22,10 @@ import type { Response as ExpressResponse, Request } from 'express';
 import { httpOnlyCookieOptions } from './cookies/cookies-options';
 import { UsersService } from 'src/users/providers/users.service';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
+import { StartCheckoutVerificationDto } from './dtos/start-checkout-verification.dto';
+import { VerifyCheckoutOtpDto } from './dtos/verify-checkout-otp.dto';
+import { StartCheckoutVerificationProvider } from './providers/start-checkout-verification.provider';
+import { VerifyCheckoutOtpProvider } from './providers/verify-checkout-otp.provider';
 
 @Controller('auth')
 export class AuthController {
@@ -38,6 +42,8 @@ export class AuthController {
 
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
+    private readonly startCheckoutVerificationProvider: StartCheckoutVerificationProvider,
+    private readonly verifyCheckoutOtpProvider: VerifyCheckoutOtpProvider,
   ) {}
 
   @Auth(AuthType.None)
@@ -134,5 +140,44 @@ export class AuthController {
   @Post('reset-password')
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     return await this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @Post('checkout/start-verification')
+  async startCheckoutVerification(
+    @Body() startCheckoutVerificationDto: StartCheckoutVerificationDto,
+  ) {
+    const result = await this.startCheckoutVerificationProvider.start(
+      startCheckoutVerificationDto,
+    );
+
+    return {
+      success: true,
+      message: 'Verification code sent to your email',
+      data: result,
+    };
+  }
+
+  @Auth(AuthType.None)
+  @HttpCode(HttpStatus.OK)
+  @Post('checkout/verify-otp')
+  async verifyCheckoutOtp(
+    @Body() verifyCheckoutOtpDto: VerifyCheckoutOtpDto,
+    @Res({ passthrough: true }) res: ExpressResponse,
+  ) {
+    const { accessToken, refreshToken } =
+      await this.verifyCheckoutOtpProvider.verify(
+        verifyCheckoutOtpDto.email,
+        verifyCheckoutOtpDto.code,
+      );
+
+    res.cookie('accessToken', accessToken, httpOnlyCookieOptions);
+    res.cookie('refreshToken', refreshToken, httpOnlyCookieOptions);
+
+    return {
+      success: true,
+      message: 'Email verified successfully',
+    };
   }
 }

@@ -3,6 +3,29 @@ import { EmailTemplate } from 'src/email-templates/email-template.entity';
 
 const templates = [
   {
+    templateName: 'checkout_verification_otp',
+    subject: 'Your Unitus checkout verification code',
+    body: `
+      <div style="margin:0;padding:32px;background:#f5f7fb;font-family:Arial,sans-serif;color:#111827">
+        <div style="max-width:640px;margin:auto;background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #e5e7eb">
+          <div style="padding:34px;background:linear-gradient(135deg,#102048,#304fdb 55%,#e34b44);color:#fff">
+            <p style="letter-spacing:5px;text-transform:uppercase;font-size:12px;margin:0 0 12px">Checkout verification</p>
+            <h1 style="font-size:30px;line-height:1.2;margin:0">Hi {{name}}, confirm your email</h1>
+          </div>
+          <div style="padding:30px">
+            <p style="font-size:16px;line-height:1.7;color:#475569">Use this code at checkout to verify your email, create your Unitus account, and continue your purchase.</p>
+            <div style="margin:28px 0;padding:20px;border-radius:20px;background:#fff7ed;border:1px solid #fed7aa;text-align:center">
+              <p style="margin:0 0 10px;font-size:12px;letter-spacing:4px;text-transform:uppercase;color:#9a3412">Verification code</p>
+              <p style="margin:0;font-size:36px;font-weight:800;letter-spacing:8px;color:#111827">{{verificationCode}}</p>
+            </div>
+            <p style="font-size:14px;color:#64748b">This code expires in {{expiryTime}}.</p>
+            <p style="font-size:12px;color:#94a3b8;margin-top:24px">{{year}} Unitus Health Academy</p>
+          </div>
+        </div>
+      </div>
+    `,
+  },
+  {
     templateName: 'course_certificate_issued',
     subject: 'Your Unitus certificate for {{courseTitle}} is ready',
     body: `

@@ -9,6 +9,7 @@ import { EmailTemplatesModule } from 'src/email-templates/email-templates.module
 import { SendVerificationEmailProvider } from './providers/send-verification-email.provider';
 import { SendForgotPasswordEmailProvider } from './providers/send-forgot-password-email.provider';
 import { SendResetPasswordEmailProvider } from './providers/send-reset-password-email.provider';
+import { SendCheckoutOtpEmailProvider } from './providers/send-checkout-otp-email.provider';
 
 @Global()
 @Module({
@@ -47,6 +48,7 @@ import { SendResetPasswordEmailProvider } from './providers/send-reset-password-
     SendVerificationEmailProvider,
     SendForgotPasswordEmailProvider,
     SendResetPasswordEmailProvider,
+    SendCheckoutOtpEmailProvider,
   ],
   exports: [MailService],
 })

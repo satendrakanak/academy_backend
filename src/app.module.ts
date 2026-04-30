@@ -40,6 +40,9 @@ import { ProfilesModule } from './profiles/profiles.module';
 import { ArticlesModule } from './articles/articles.module';
 import { TestimonialsModule } from './testimonials/testimonials.module';
 import { CertificatesModule } from './certificates/certificates.module';
+import { CourseReviewsModule } from './course-reviews/course-reviews.module';
+import { ArticleCommentsModule } from './article-comments/article-comments.module';
+import { CourseQaModule } from './course-qa/course-qa.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -103,6 +106,9 @@ const ENV = process.env.NODE_ENV;
     ArticlesModule,
     TestimonialsModule,
     CertificatesModule,
+    CourseReviewsModule,
+    ArticleCommentsModule,
+    CourseQaModule,
   ],
   controllers: [AppController],
   providers: [

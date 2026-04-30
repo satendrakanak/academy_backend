@@ -23,6 +23,8 @@ import { DeleteBulkCategoriesDto } from './dtos/delete-bulk-categories.dto';
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import type { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { CategoryType } from './enums/categoryType.enum';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('categories')
 export class CategoriesController {
@@ -33,6 +35,7 @@ export class CategoriesController {
     private readonly categoriesService: CategoriesService,
   ) {}
 
+  @Auth(AuthType.None)
   @Get()
   public async getCategories(
     @Query() getCategoriesDto: GetCategoriesDto,
@@ -40,6 +43,7 @@ export class CategoriesController {
     return await this.categoriesService.findAll(getCategoriesDto);
   }
 
+  @Auth(AuthType.None)
   @Get('by-type')
   public async getCategoriesByType(
     @Query('type') type: string,
@@ -49,6 +53,7 @@ export class CategoriesController {
     );
   }
 
+  @Auth(AuthType.None)
   @Get(':id')
   public async getCategoryById(
     @Param('id', ParseIntPipe) id: number,

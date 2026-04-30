@@ -43,6 +43,7 @@ export class UsersController {
     return await this.usersService.getUserWithProfile(user.sub);
   }
 
+  @Auth(AuthType.None)
   @Get('all-faculty')
   public async getAllFaculty() {
     return await this.usersService.getAllFaculty();
