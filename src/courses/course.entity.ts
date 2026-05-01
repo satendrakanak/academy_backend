@@ -32,10 +32,11 @@ type CourseExamQuestionOption = {
 type CourseExamQuestion = {
   id: string;
   prompt: string;
-  type: 'single' | 'multiple' | 'true_false';
+  type: 'single' | 'multiple' | 'true_false' | 'short_text' | 'drag_drop';
   points: number;
   explanation?: string;
   options: CourseExamQuestionOption[];
+  acceptedAnswers?: string[];
 };
 
 type CourseExam = {

@@ -39,7 +39,13 @@ class CourseExamQuestionOptionDto {
   isCorrect!: boolean;
 }
 
-const COURSE_EXAM_QUESTION_TYPES = ['single', 'multiple', 'true_false'] as const;
+const COURSE_EXAM_QUESTION_TYPES = [
+  'single',
+  'multiple',
+  'true_false',
+  'short_text',
+  'drag_drop',
+] as const;
 
 class CourseExamQuestionDto {
   @IsString()
@@ -52,7 +58,7 @@ class CourseExamQuestionDto {
 
   @IsString()
   @IsEnum(COURSE_EXAM_QUESTION_TYPES)
-  type!: 'single' | 'multiple' | 'true_false';
+  type!: 'single' | 'multiple' | 'true_false' | 'short_text' | 'drag_drop';
 
   @Type(() => Number)
   @IsNumber()
@@ -64,10 +70,14 @@ class CourseExamQuestionDto {
   explanation?: string;
 
   @IsArray()
-  @ArrayMinSize(2)
   @ValidateNested({ each: true })
   @Type(() => CourseExamQuestionOptionDto)
   options!: CourseExamQuestionOptionDto[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  acceptedAnswers?: string[];
 }
 
 class CourseExamDto {

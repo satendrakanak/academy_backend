@@ -90,8 +90,10 @@ export class CourseExamsService {
     }
 
     const answerMap = new Map<string, string[]>();
+    const answerTextMap = new Map<string, string>();
     for (const answer of dto.answers) {
       answerMap.set(answer.questionId, [...new Set(answer.selectedOptionIds)]);
+      answerTextMap.set(answer.questionId, answer.answerText?.trim() || '');
     }
 
     const snapshot: CourseExamAttemptSnapshot = {
@@ -100,8 +102,10 @@ export class CourseExamsService {
       questions: exam.questions.map((question) => ({
         id: question.id,
         prompt: question.prompt,
+        type: question.type,
         explanation: question.explanation,
         points: question.points,
+        acceptedAnswers: question.acceptedAnswers,
         options: question.options.map((option) => ({
           id: option.id,
           text: option.text,
@@ -117,19 +121,41 @@ export class CourseExamsService {
 
     for (const question of exam.questions) {
       const selectedOptionIds = answerMap.get(question.id) || [];
-      const correctOptionIds = question.options
-        .filter((option) => option.isCorrect)
-        .map((option) => option.id)
-        .sort();
+      const answerText = answerTextMap.get(question.id) || '';
+      const correctOptionIds =
+        question.type === 'drag_drop'
+          ? question.options.map((option) => option.id)
+          : question.options
+              .filter((option) => option.isCorrect)
+              .map((option) => option.id)
+              .sort();
       const normalizedSelected = [...selectedOptionIds].sort();
-      const isCorrect =
-        normalizedSelected.length === correctOptionIds.length &&
-        normalizedSelected.every((optionId, index) => optionId === correctOptionIds[index]);
+      const acceptedAnswers = (question.acceptedAnswers || [])
+        .map((answer) => answer.trim().toLowerCase())
+        .filter(Boolean);
+      let isCorrect = false;
+
+      if (question.type === 'short_text') {
+        isCorrect = acceptedAnswers.includes(answerText.trim().toLowerCase());
+      } else if (question.type === 'drag_drop') {
+        isCorrect =
+          selectedOptionIds.length === question.options.length &&
+          selectedOptionIds.every(
+            (optionId, index) => optionId === question.options[index]?.id,
+          );
+      } else {
+        isCorrect =
+          normalizedSelected.length === correctOptionIds.length &&
+          normalizedSelected.every(
+            (optionId, index) => optionId === correctOptionIds[index],
+          );
+      }
       const earnedPoints = isCorrect ? question.points : 0;
 
       answers.push({
         questionId: question.id,
         selectedOptionIds,
+        answerText,
       });
 
       questionResults.push({
@@ -137,6 +163,8 @@ export class CourseExamsService {
         prompt: question.prompt,
         selectedOptionIds,
         correctOptionIds,
+        answerText,
+        acceptedAnswers: question.type === 'short_text' ? acceptedAnswers : undefined,
         isCorrect,
         earnedPoints,
         totalPoints: question.points,

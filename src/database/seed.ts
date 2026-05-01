@@ -6,6 +6,7 @@ import { seedPermissions } from './seeds/permission.seed';
 import { seedRoles } from './seeds/role.seed';
 import { assignDefaultRole } from './seeds/assign-default-role.seed';
 import { seedEmailTemplates } from './seeds/email-template.seed';
+import { seedCourseLearningDemo } from './seeds/course-learning-demo.seed';
 
 const AppDataSource = new DataSource({
   type: 'postgres',
@@ -26,6 +27,7 @@ async function run() {
 
   await assignDefaultRole(AppDataSource);
   await seedEmailTemplates(AppDataSource);
+  await seedCourseLearningDemo(AppDataSource);
 
   await AppDataSource.destroy();
 

@@ -12,6 +12,7 @@ import {
 export type CourseExamAttemptAnswer = {
   questionId: string;
   selectedOptionIds: string[];
+  answerText?: string;
 };
 
 export type CourseExamAttemptQuestionResult = {
@@ -19,6 +20,8 @@ export type CourseExamAttemptQuestionResult = {
   prompt: string;
   selectedOptionIds: string[];
   correctOptionIds: string[];
+  answerText?: string;
+  acceptedAnswers?: string[];
   isCorrect: boolean;
   earnedPoints: number;
   totalPoints: number;
@@ -31,8 +34,10 @@ export type CourseExamAttemptSnapshot = {
   questions: {
     id: string;
     prompt: string;
+    type: 'single' | 'multiple' | 'true_false' | 'short_text' | 'drag_drop';
     explanation?: string;
     points: number;
+    acceptedAnswers?: string[];
     options: {
       id: string;
       text: string;

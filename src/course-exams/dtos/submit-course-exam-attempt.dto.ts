@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsNotEmpty,
+  IsOptional,
   IsString,
   ValidateNested,
 } from 'class-validator';
@@ -15,6 +16,11 @@ class SubmitCourseExamAnswerDto {
   @IsArray()
   @IsString({ each: true })
   selectedOptionIds!: string[];
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  answerText?: string;
 }
 
 export class SubmitCourseExamAttemptDto {
