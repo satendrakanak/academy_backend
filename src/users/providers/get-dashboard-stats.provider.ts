@@ -63,8 +63,9 @@ export class GetDashboardStatsProvider {
     const result = await this.userProgressRepository
       .createQueryBuilder('progress')
       .select([
-        `DATE(timezone('${timezone}', progress.updatedAt)) as date`,
-        'AVG(progress.progress) as avgProgress',
+        `TO_CHAR(timezone('${timezone}', progress.updatedAt), 'YYYY-MM-DD') as date`,
+        'MAX(progress.progress) as peakProgress',
+        'COUNT(progress.id) as activityCount',
       ])
       .where('progress.userId = :userId', { userId })
       .andWhere(
@@ -77,7 +78,12 @@ export class GetDashboardStatsProvider {
     const progressByDate = new Map(
       result.map((item) => [
         item.date,
-        Math.round(Number(item.avgProgress) || 0),
+        Math.round(
+          Math.max(
+            Number(item.peakProgress) || 0,
+            Math.min(Number(item.activityCount || 0) * 20, 100),
+          ),
+        ),
       ]),
     );
 
