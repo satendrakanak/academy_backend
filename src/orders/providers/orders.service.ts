@@ -78,14 +78,51 @@ export class OrdersService {
 
   async findAll(): Promise<Order[]> {
     return await this.orderRepository.find({
-      relations: ['items', 'items.course', 'user'],
+      relations: [
+        'items',
+        'items.course',
+        'items.course.image',
+        'user',
+        'refundRequests',
+        'refundRequests.requester',
+        'refundRequests.reviewedBy',
+        'refundRequests.logs',
+        'refundRequests.logs.actor',
+      ],
+      order: {
+        createdAt: 'DESC',
+        refundRequests: {
+          createdAt: 'DESC',
+          logs: {
+            createdAt: 'ASC',
+          },
+        },
+      },
     });
   }
 
   async findOneById(id: number): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: { id },
-      relations: ['items', 'items.course', 'items.course.image', 'user'],
+      relations: [
+        'items',
+        'items.course',
+        'items.course.image',
+        'user',
+        'refundRequests',
+        'refundRequests.requester',
+        'refundRequests.reviewedBy',
+        'refundRequests.logs',
+        'refundRequests.logs.actor',
+      ],
+      order: {
+        refundRequests: {
+          createdAt: 'DESC',
+          logs: {
+            createdAt: 'ASC',
+          },
+        },
+      },
     });
     if (!order) {
       throw new NotFoundException('Order not found');
@@ -200,7 +237,17 @@ export class OrdersService {
   async findUserOrders(userId: number) {
     const orders = await this.orderRepository.find({
       where: { user: { id: userId } },
-      relations: ['items', 'items.course', 'items.course.image', 'user'],
+      relations: [
+        'items',
+        'items.course',
+        'items.course.image',
+        'user',
+        'refundRequests',
+        'refundRequests.requester',
+        'refundRequests.reviewedBy',
+        'refundRequests.logs',
+        'refundRequests.logs.actor',
+      ],
       order: { createdAt: 'DESC' },
     });
 

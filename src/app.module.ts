@@ -47,6 +47,7 @@ import { CartsModule } from './carts/carts.module';
 import { FacultyReviewsModule } from './faculty-reviews/faculty-reviews.module';
 import { ContactLeadsModule } from './contact-leads/contact-leads.module';
 import { CourseExamsModule } from './course-exams/course-exams.module';
+import { RefundsModule } from './refunds/refunds.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -117,6 +118,7 @@ const ENV = process.env.NODE_ENV;
     FacultyReviewsModule,
     ContactLeadsModule,
     CourseExamsModule,
+    RefundsModule,
   ],
   controllers: [AppController],
   providers: [

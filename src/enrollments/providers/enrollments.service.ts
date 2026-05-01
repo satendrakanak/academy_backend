@@ -49,7 +49,7 @@ export class EnrollmentsService {
   // 🥈 GET USER COURSES (My Courses page)
   async getUserCourses(userId: number) {
     const enrollments = await this.enrollmentRepository.find({
-      where: { user: { id: userId } },
+      where: { user: { id: userId }, isActive: true },
       relations: ['course'],
       order: { enrolledAt: 'DESC' },
     });
@@ -69,6 +69,7 @@ export class EnrollmentsService {
       where: {
         user: { id: userId },
         course: { id: courseId },
+        isActive: true,
       },
     });
 
@@ -80,6 +81,7 @@ export class EnrollmentsService {
       where: {
         user: { id: userId },
         course: { id: In(courseIds) },
+        isActive: true,
       },
       relations: ['course'],
     });
@@ -93,5 +95,21 @@ export class EnrollmentsService {
     }
 
     return map;
+  }
+
+  async deactivateByOrder(orderId: number) {
+    const enrollments = await this.enrollmentRepository.find({
+      where: { order: { id: orderId }, isActive: true },
+    });
+
+    if (!enrollments.length) {
+      return [];
+    }
+
+    for (const enrollment of enrollments) {
+      enrollment.isActive = false;
+    }
+
+    return this.enrollmentRepository.save(enrollments);
   }
 }

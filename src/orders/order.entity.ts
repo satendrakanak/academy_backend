@@ -10,6 +10,7 @@ import {
 import { OrderStatus } from './enums/orderStatus.enum';
 import { OrderItem } from './order-item.entity';
 import { User } from 'src/users/user.entity';
+import { RefundRequest } from 'src/refunds/refund-request.entity';
 
 @Entity()
 export class Order {
@@ -90,6 +91,9 @@ export class Order {
     cascade: true,
   })
   items!: OrderItem[];
+
+  @OneToMany(() => RefundRequest, (refundRequest) => refundRequest.order)
+  refundRequests?: RefundRequest[];
 
   @CreateDateColumn()
   createdAt!: Date;
