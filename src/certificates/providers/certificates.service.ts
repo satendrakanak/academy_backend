@@ -19,6 +19,7 @@ import { Upload } from 'src/uploads/upload.entity';
 import { FileTypes } from 'src/uploads/enums/file-types.enum';
 import { UploadStatus } from 'src/uploads/enums/upload-status.enum';
 import { UserProgres } from 'src/user-progress/user-progres.entity';
+import { CourseExamsService } from 'src/course-exams/providers/course-exams.service';
 import { User } from 'src/users/user.entity';
 import { Certificate } from '../certificate.entity';
 import { CertificateResponse } from '../interfaces/certificate-response.interface';
@@ -55,6 +56,7 @@ export class CertificatesService {
     private readonly mailService: MailService,
     private readonly emailTemplatesService: EmailTemplatesService,
     private readonly certificateTemplateProvider: CertificateTemplateProvider,
+    private readonly courseExamsService: CourseExamsService,
   ) {}
 
   async findMine(userId: number): Promise<CertificateResponse[]> {
@@ -140,7 +142,9 @@ export class CertificatesService {
     if (!completion.isCompleted) {
       if (options.throwIfIncomplete) {
         throw new BadRequestException(
-          'Complete the course to unlock certificate',
+          completion.examRequired && !completion.examPassed
+            ? 'Pass the final exam to unlock certificate'
+            : 'Complete the course to unlock certificate',
         );
       }
 
@@ -194,11 +198,21 @@ export class CertificatesService {
       relations: ['chapter', 'chapter.course'],
     });
 
+    const course = await this.courseRepository.findOne({
+      where: { id: courseId },
+    });
+    const examRequired = !!course?.exam?.isPublished && !!course?.exam?.questions?.length;
+    const examPassed = examRequired
+      ? await this.courseExamsService.hasPassedExam(userId, courseId)
+      : true;
+
     if (!totalLectures) {
       return {
         totalLectures: 0,
         completedLectures: 0,
         progress: 0,
+        examRequired,
+        examPassed,
         isCompleted: false,
       };
     }
@@ -222,7 +236,9 @@ export class CertificatesService {
       totalLectures,
       completedLectures,
       progress,
-      isCompleted: completedLectures >= totalLectures,
+      examRequired,
+      examPassed,
+      isCompleted: completedLectures >= totalLectures && examPassed,
     };
   }
 

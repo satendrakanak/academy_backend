@@ -23,6 +23,33 @@ type CourseFaqItem = {
   answer: string;
 };
 
+type CourseExamQuestionOption = {
+  id: string;
+  text: string;
+  isCorrect: boolean;
+};
+
+type CourseExamQuestion = {
+  id: string;
+  prompt: string;
+  type: 'single' | 'multiple' | 'true_false';
+  points: number;
+  explanation?: string;
+  options: CourseExamQuestionOption[];
+};
+
+type CourseExam = {
+  title: string;
+  description?: string;
+  instructions?: string;
+  passingPercentage: number;
+  maxAttempts: number;
+  timeLimitMinutes?: number | null;
+  showResultImmediately: boolean;
+  isPublished: boolean;
+  questions: CourseExamQuestion[];
+};
+
 @Entity()
 export class Course {
   @PrimaryGeneratedColumn()
@@ -109,6 +136,9 @@ export class Course {
 
   @Column({ type: 'jsonb', default: () => "'[]'" })
   faqs!: CourseFaqItem[];
+
+  @Column({ type: 'jsonb', nullable: true })
+  exam?: CourseExam | null;
 
   @ManyToOne(() => Upload, { nullable: true, onDelete: 'SET NULL' })
   video?: Upload | null;

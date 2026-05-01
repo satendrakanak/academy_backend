@@ -10,6 +10,10 @@ import {
   IsInt,
   IsArray,
   ValidateNested,
+  IsEnum,
+  IsNumber,
+  Min,
+  ArrayMinSize,
 } from 'class-validator';
 
 class CourseFaqItemDto {
@@ -20,6 +24,92 @@ class CourseFaqItemDto {
   @IsString()
   @IsNotEmpty()
   answer!: string;
+}
+
+class CourseExamQuestionOptionDto {
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  text!: string;
+
+  @IsBoolean()
+  isCorrect!: boolean;
+}
+
+const COURSE_EXAM_QUESTION_TYPES = ['single', 'multiple', 'true_false'] as const;
+
+class CourseExamQuestionDto {
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  prompt!: string;
+
+  @IsString()
+  @IsEnum(COURSE_EXAM_QUESTION_TYPES)
+  type!: 'single' | 'multiple' | 'true_false';
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  points!: number;
+
+  @IsOptional()
+  @IsString()
+  explanation?: string;
+
+  @IsArray()
+  @ArrayMinSize(2)
+  @ValidateNested({ each: true })
+  @Type(() => CourseExamQuestionOptionDto)
+  options!: CourseExamQuestionOptionDto[];
+}
+
+class CourseExamDto {
+  @IsString()
+  @IsNotEmpty()
+  title!: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  instructions?: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  passingPercentage!: number;
+
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  maxAttempts!: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(1)
+  timeLimitMinutes?: number;
+
+  @IsBoolean()
+  showResultImmediately!: boolean;
+
+  @IsBoolean()
+  isPublished!: boolean;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @ValidateNested({ each: true })
+  @Type(() => CourseExamQuestionDto)
+  questions!: CourseExamQuestionDto[];
 }
 
 export class CreateCourseDto {
@@ -160,4 +250,9 @@ export class CreateCourseDto {
   @ValidateNested({ each: true })
   @Type(() => CourseFaqItemDto)
   faqs?: CourseFaqItemDto[];
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CourseExamDto)
+  exam?: CourseExamDto;
 }
