@@ -18,6 +18,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
+type CourseFaqItem = {
+  question: string;
+  answer: string;
+};
+
 @Entity()
 export class Course {
   @PrimaryGeneratedColumn()
@@ -101,6 +106,9 @@ export class Course {
 
   @Column({ type: 'text', nullable: true })
   disclaimer?: string;
+
+  @Column({ type: 'jsonb', default: () => "'[]'" })
+  faqs!: CourseFaqItem[];
 
   @ManyToOne(() => Upload, { nullable: true, onDelete: 'SET NULL' })
   video?: Upload | null;
