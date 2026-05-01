@@ -17,6 +17,8 @@ import { PatchCourseDto } from './dtos/patch-course.dto';
 import { Course } from './course.entity';
 import { GetCoursesDto } from './dtos/get-courses.dto';
 import { Paginated } from 'src/common/pagination/interfaces/paginated.interface';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('courses')
 export class CoursesController {
@@ -28,6 +30,7 @@ export class CoursesController {
     private readonly coursesService: CoursesService,
   ) {}
 
+  @Auth(AuthType.Optional)
   @Get()
   public async getCourses(
     @Query() getCoursesDto: GetCoursesDto,
@@ -36,11 +39,13 @@ export class CoursesController {
     return await this.coursesService.findAll(getCoursesDto, user);
   }
 
+  @Auth(AuthType.Optional)
   @Get('featured')
   async getFeaturedCourses(@ActiveUser() user: ActiveUserData) {
     return await this.coursesService.getFeaturedCourses(user);
   }
 
+  @Auth(AuthType.Optional)
   @Get('related/:id')
   async getRelatedCourses(
     @Param('id', ParseIntPipe) id: number,
@@ -49,6 +54,7 @@ export class CoursesController {
     return await this.coursesService.getRelatedCourses(id, user);
   }
 
+  @Auth(AuthType.Optional)
   @Get('slug/:slug')
   public async getCourseBySlug(
     @Param('slug') slug: string,
@@ -72,6 +78,7 @@ export class CoursesController {
     return await this.coursesService.getEnrolledCourses(userId, user);
   }
 
+  @Auth(AuthType.None)
   @Get(':id')
   public async getCourseById(
     @Param('id', ParseIntPipe) id: number,

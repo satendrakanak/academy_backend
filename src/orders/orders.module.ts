@@ -15,6 +15,9 @@ import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
 import { CouponsModule } from 'src/coupons/coupons.module';
 import { UsersModule } from 'src/users/users.module';
 import { UpdateOrderStatusByAdminProvider } from './providers/update-order-status-by-admin.provider';
+import { EmailTemplatesModule } from 'src/email-templates/email-templates.module';
+import { OrderEmailProvider } from './providers/email/order-email.provider';
+import { CartsModule } from 'src/carts/carts.module';
 
 @Module({
   imports: [
@@ -25,6 +28,8 @@ import { UpdateOrderStatusByAdminProvider } from './providers/update-order-statu
     EnrollmentsModule,
     CouponsModule,
     UsersModule,
+    EmailTemplatesModule,
+    CartsModule,
   ],
   controllers: [OrdersController],
   providers: [
@@ -34,6 +39,7 @@ import { UpdateOrderStatusByAdminProvider } from './providers/update-order-statu
     CreateOrderProvider,
     RetryPaymentProvider,
     UpdateOrderStatusByAdminProvider,
+    OrderEmailProvider,
   ],
   exports: [OrdersService],
 })

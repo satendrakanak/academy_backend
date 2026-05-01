@@ -13,8 +13,8 @@ export class S3SignedUrlProvider {
   ) {}
 
   async generateUploadUrl(key: string, mimeType: string) {
-    const s3 = this.s3Provider.getClient();
-    const bucket = this.s3Provider.getBucket();
+    const s3 = await this.s3Provider.getClient();
+    const bucket = await this.s3Provider.getBucket();
 
     const command = new PutObjectCommand({
       Bucket: bucket,

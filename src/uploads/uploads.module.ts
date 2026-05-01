@@ -7,9 +7,10 @@ import { Upload } from './upload.entity';
 import { DeleteFileFromS3Provider } from './providers/delete-file-from-s3.provider';
 import { S3SignedUrlProvider } from './providers/s3-signed-url.provider';
 import { InitUploadProvider } from './providers/init-upload.provider';
+import { SettingsModule } from 'src/settings/settings.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Upload])],
+  imports: [TypeOrmModule.forFeature([Upload]), SettingsModule],
   controllers: [UploadsController],
   providers: [
     UploadsService,

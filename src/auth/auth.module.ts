@@ -17,13 +17,18 @@ import { VerifyEmailProvider } from './providers/verify-email.provider';
 import { VerificationTokenService } from './providers/verification-token.service';
 import { ForgotPasswordProvider } from './providers/forgot-password.provider';
 import { ResetPasswordProvider } from './providers/reset-password.provider';
+import { User } from 'src/users/user.entity';
+import { StartCheckoutVerificationProvider } from './providers/start-checkout-verification.provider';
+import { VerifyCheckoutOtpProvider } from './providers/verify-checkout-otp.provider';
+import { StartSignupVerificationProvider } from './providers/start-signup-verification.provider';
+import { VerifySignupOtpProvider } from './providers/verify-signup-otp.provider';
 
 @Module({
   imports: [
     forwardRef(() => UsersModule),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
-    TypeOrmModule.forFeature([VerificationToken]),
+    TypeOrmModule.forFeature([VerificationToken, User]),
   ],
   controllers: [AuthController],
   providers: [
@@ -41,7 +46,15 @@ import { ResetPasswordProvider } from './providers/reset-password.provider';
     VerificationTokenService,
     ForgotPasswordProvider,
     ResetPasswordProvider,
+    StartSignupVerificationProvider,
+    VerifySignupOtpProvider,
+    StartCheckoutVerificationProvider,
+    VerifyCheckoutOtpProvider,
   ],
-  exports: [AuthService, HashingProvider],
+  exports: [
+    AuthService,
+    HashingProvider,
+    GenerateVerificationTokenProvider,
+  ],
 })
 export class AuthModule {}

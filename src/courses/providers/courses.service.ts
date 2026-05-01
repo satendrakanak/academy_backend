@@ -204,7 +204,7 @@ export class CoursesService {
     });
   }
 
-  async findOneBySlug(slug: string, user: ActiveUserData): Promise<Course> {
+  async findOneBySlug(slug: string, user?: ActiveUserData): Promise<Course> {
     return await this.findOneBySlugProvider.findOneBySlug(slug, user);
   }
 
@@ -216,7 +216,7 @@ export class CoursesService {
     return await this.getFeaturedCoursesProvider.getFeaturedCourses(user);
   }
 
-  async getRelatedCourses(courseId: number, user: ActiveUserData) {
+  async getRelatedCourses(courseId: number, user?: ActiveUserData) {
     return await this.getRelatedCoursesProvider.getRelatedCourses(
       courseId,
       user,

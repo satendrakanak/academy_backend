@@ -36,4 +36,31 @@ export class UserProfile {
 
   @Column({ nullable: true })
   website!: string;
+
+  @Column({ nullable: true })
+  headline!: string;
+
+  @Column({ nullable: true })
+  company!: string;
+
+  @Column({ nullable: true })
+  facebook!: string;
+
+  @Column({ nullable: true })
+  instagram!: string;
+
+  @Column({ nullable: true })
+  twitter!: string;
+
+  @Column({ nullable: true })
+  linkedin!: string;
+
+  @Column({ nullable: true })
+  youtube!: string;
+
+  @Column({ nullable: true })
+  whatsapp!: string;
+
+  @Column({ nullable: true })
+  telegram!: string;
 }

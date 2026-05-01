@@ -46,7 +46,7 @@ export class SendWelcomeEmailProvider {
     const html = parseTemplate(template.body, {
       name: user.firstName,
       email: user.email,
-      dashboardUrl: `${this.configService.get<string>('appConfig.fronEndUrl')}/admin/dashboard`,
+      dashboardUrl: `${this.configService.get<string>('appConfig.fronEndUrl')}/dashboard`,
       year: new Date().getFullYear().toString(),
     });
     await this.mailQueue.add('send-email', {

@@ -16,21 +16,15 @@ export async function seedRoles(dataSource: DataSource) {
   const rolesData = [
     {
       name: 'student',
-      permissions: ['view_course', 'enroll_course'],
+      permissions: ['view_course', 'enroll_course', 'view_article'],
     },
     {
       name: 'faculty',
-      permissions: ['create_course', 'update_course', 'view_course'],
+      permissions: ['view_course', 'update_course', 'view_article'],
     },
     {
       name: 'admin',
-      permissions: [
-        'create_course',
-        'update_course',
-        'delete_course',
-        'manage_users',
-        'approve_faculty',
-      ],
+      permissions: allPermissions.map((permission) => permission.name),
     },
   ];
 
@@ -40,14 +34,18 @@ export async function seedRoles(dataSource: DataSource) {
       relations: ['permissions'],
     });
 
+    const nextPermissions = getPermissions(roleData.permissions);
+
     if (!role) {
       role = roleRepo.create({
         name: roleData.name,
-        permissions: getPermissions(roleData.permissions),
+        permissions: nextPermissions,
       });
-
-      await roleRepo.save(role);
+    } else {
+      role.permissions = nextPermissions;
     }
+
+    await roleRepo.save(role);
   }
 
   console.log('✅ Roles seeded');

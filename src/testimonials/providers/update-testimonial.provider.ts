@@ -39,7 +39,7 @@ export class UpdateTestimonialProvider {
   ): Promise<Testimonial> {
     const testimonial = await this.testimonialRepository.findOne({
       where: { id },
-      relations: ['avatar', 'video', 'course'],
+      relations: ['avatar', 'video', 'courses', 'courses.image', 'courses.video'],
     });
 
     if (!testimonial) {
@@ -126,19 +126,15 @@ export class UpdateTestimonialProvider {
     /**
      * 📚 6. COURSE RELATION
      */
-    if (updateTestimonialDto.courseId !== undefined) {
-      if (!updateTestimonialDto.courseId) {
-        testimonial.course = null;
+    if (updateTestimonialDto.courseIds !== undefined) {
+      if (!updateTestimonialDto.courseIds.length) {
+        testimonial.courses = [];
       } else {
-        const course = await this.coursesService.findOneById(
-          updateTestimonialDto.courseId,
+        testimonial.courses = await Promise.all(
+          updateTestimonialDto.courseIds.map((courseId) =>
+            this.coursesService.findOneById(courseId),
+          ),
         );
-
-        if (!course) {
-          throw new BadRequestException('Invalid courseId');
-        }
-
-        testimonial.course = course;
       }
     }
 

@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -66,11 +68,15 @@ export class Testimonial {
   priority!: number;
 
   // 📚 Course relation (OPTIONAL)
-  @ManyToOne(() => Course, (course) => course.testimonials, {
-    nullable: true,
-    onDelete: 'SET NULL',
+  @ManyToMany(() => Course, (course) => course.testimonials, {
+    cascade: false,
   })
-  course!: Course | null;
+  @JoinTable({
+    name: 'testimonial_courses',
+    joinColumn: { name: 'testimonial_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'course_id', referencedColumnName: 'id' },
+  })
+  courses!: Course[];
 
   // 🧠 Moderation system
   @Column({

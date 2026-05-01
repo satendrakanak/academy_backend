@@ -66,6 +66,31 @@ export class OrdersController {
     return this.ordersService.retryPayment(orderId);
   }
 
+  @Post(':id/cancel-payment')
+  async cancelPayment(
+    @Param('id', ParseIntPipe) orderId: number,
+    @ActiveUser() user: ActiveUserData,
+  ) {
+    await this.ordersService.cancelPendingOrder(orderId, user);
+
+    return {
+      success: true,
+    };
+  }
+
+  @Post(':id/mark-failed')
+  async markFailed(
+    @Param('id', ParseIntPipe) orderId: number,
+    @ActiveUser() user: ActiveUserData,
+    @Body('paymentId') paymentId?: string,
+  ) {
+    await this.ordersService.markPaymentFailed(orderId, user, paymentId);
+
+    return {
+      success: true,
+    };
+  }
+
   @Auth(AuthType.None)
   @Post('webhook')
   async handleWebhook(@Req() req: Request) {

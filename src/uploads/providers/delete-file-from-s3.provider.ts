@@ -13,8 +13,8 @@ export class DeleteFileFromS3Provider {
 
   async deleteFile(key: string) {
     try {
-      const s3 = this.s3Provider.getClient();
-      const bucketName = this.s3Provider.getBucket();
+      const s3 = await this.s3Provider.getClient();
+      const bucketName = await this.s3Provider.getBucket();
       await s3.send(
         new DeleteObjectCommand({
           Bucket: bucketName,

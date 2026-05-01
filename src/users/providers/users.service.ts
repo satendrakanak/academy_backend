@@ -35,6 +35,8 @@ import { ProfilesService } from 'src/profiles/providers/profiles.service';
 import { MediaFileMappingService } from 'src/common/media-file-mapping/providers/media-file-mapping.service';
 import { UpdateFacultyProfileDto } from 'src/profiles/dtos/update.faculty-profile.dto';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
+import { Brackets } from 'typeorm';
+import { CreateUserOptions } from '../interfaces/create-user-options.interface';
 
 @Injectable()
 export class UsersService {
@@ -124,19 +126,46 @@ export class UsersService {
   ) {}
 
   public async findAll(getUsersDto: GetUsersDto): Promise<Paginated<User>> {
-    const result = await this.paginationProvider.paginateQuery(
+    const queryBuilder = this.userRepository
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.roles', 'roles')
+      .leftJoinAndSelect('roles.permissions', 'permissions')
+      .leftJoinAndSelect('user.profile', 'profile')
+      .leftJoinAndSelect('user.facultyProfile', 'facultyProfile')
+      .leftJoinAndSelect('user.avatar', 'avatar')
+      .leftJoinAndSelect('user.coverImage', 'coverImage')
+      .orderBy('user.createdAt', 'DESC');
+
+    if (getUsersDto.includeDeleted) {
+      queryBuilder.withDeleted();
+    }
+
+    if (getUsersDto.roleId) {
+      queryBuilder.andWhere('roles.id = :roleId', { roleId: getUsersDto.roleId });
+    }
+
+    if (getUsersDto.search?.trim()) {
+      const search = `%${getUsersDto.search.trim().toLowerCase()}%`;
+
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('LOWER(user.firstName) LIKE :search', { search })
+            .orWhere('LOWER(user.lastName) LIKE :search', { search })
+            .orWhere('LOWER(user.email) LIKE :search', { search })
+            .orWhere('LOWER(user.username) LIKE :search', { search })
+            .orWhere('LOWER(user.phoneNumber) LIKE :search', { search });
+        }),
+      );
+    }
+
+    const result = await this.paginationProvider.paginateQueryBuilder(
       {
         limit: getUsersDto.limit,
         page: getUsersDto.page,
       },
-      this.userRepository,
-      {
-        relations: ['roles', 'profile', 'avatar', 'coverImage'],
-        order: {
-          createdAt: 'DESC',
-        },
-      },
+      queryBuilder,
     );
+
     result.data = this.mediaFileMappingService.mapUsers(result.data);
 
     return result;
@@ -148,6 +177,36 @@ export class UsersService {
 
   public async findOneByEmail(email: string): Promise<User> {
     return await this.findOneByEmailProvider.findOneByEmail(email);
+  }
+
+  async getFacultyProfile(id: number): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: [
+        'roles',
+        'profile',
+        'facultyProfile',
+        'avatar',
+        'coverImage',
+        'taughtCourses',
+        'taughtCourses.image',
+        'taughtCourses.faculties',
+        'taughtCourses.faculties.avatar',
+        'taughtCourses.createdBy',
+      ],
+    });
+
+    if (!user || !user.roles.some((role) => role.name === 'faculty')) {
+      throw new NotFoundException('Faculty not found');
+    }
+
+    const mappedUser = this.mediaFileMappingService.mapUser(user);
+    mappedUser.taughtCourses =
+      mappedUser.taughtCourses?.map((course) =>
+        this.mediaFileMappingService.mapCourse(course),
+      ) || [];
+
+    return mappedUser;
   }
 
   async getUserWithProfile(userId: number): Promise<User> {
@@ -172,8 +231,13 @@ export class UsersService {
   public async create(
     createUserDto: CreateUserDto,
     currentUser?: ActiveUserData,
+    options?: CreateUserOptions,
   ): Promise<User> {
-    return await this.createUserprovider.create(createUserDto, currentUser);
+    return await this.createUserprovider.create(
+      createUserDto,
+      currentUser,
+      options,
+    );
   }
 
   public async createMany(

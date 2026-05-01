@@ -25,7 +25,7 @@ export class ApplyCouponProvider {
   // 🎯 APPLY COUPON
   // ===============================
   async apply(
-    userId: number,
+    userId: number | undefined,
     code: string,
     cartTotal: number,
     courseIds: number[],
@@ -69,7 +69,7 @@ export class ApplyCouponProvider {
   // ===============================
   async validateCoupon(
     coupon: Coupon,
-    userId: number,
+    userId: number | undefined,
     cartTotal: number,
     courseIds: number[],
   ): Promise<Coupon> {
@@ -98,7 +98,7 @@ export class ApplyCouponProvider {
     }
 
     // ❌ per-user usage
-    if (coupon.perUserLimit) {
+    if (coupon.perUserLimit && userId) {
       const usedByUser = await this.couponUsageRepository.count({
         where: {
           user: { id: userId },

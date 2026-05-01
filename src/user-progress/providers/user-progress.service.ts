@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateLectureProgressDto } from '../dtos/update-lecture-progress.dto';
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { WeeklyProgress } from '../interfaces/weekly-progress.interface';
+import { CertificatesService } from 'src/certificates/providers/certificates.service';
 
 @Injectable()
 export class UserProgressService {
@@ -14,6 +15,8 @@ export class UserProgressService {
      */
     @InjectRepository(UserProgres)
     private readonly userProgressRepository: Repository<UserProgres>,
+
+    private readonly certificatesService: CertificatesService,
   ) {}
 
   async getLectureProgress(user: ActiveUserData, lectureId: number) {
@@ -159,7 +162,15 @@ export class UserProgressService {
         record.isCompleted = true;
       }
 
-      return this.userProgressRepository.save(record);
+      const savedRecord = await this.userProgressRepository.save(record);
+
+      if (savedRecord.isCompleted) {
+        await this.certificatesService
+          .ensureFromLecture(userId, lectureId)
+          .catch(() => null);
+      }
+
+      return savedRecord;
     }
 
     const newRecord = this.userProgressRepository.create({
@@ -170,7 +181,15 @@ export class UserProgressService {
       isCompleted,
     });
 
-    return this.userProgressRepository.save(newRecord);
+    const savedRecord = await this.userProgressRepository.save(newRecord);
+
+    if (savedRecord.isCompleted) {
+      await this.certificatesService
+        .ensureFromLecture(userId, lectureId)
+        .catch(() => null);
+    }
+
+    return savedRecord;
   }
 
   async getCompletedCoursesCount(userId: number): Promise<number> {
@@ -228,24 +247,51 @@ export class UserProgressService {
   }
 
   async getWeeklyProgress(userId: number): Promise<WeeklyProgress[]> {
+    const timezone = 'Asia/Kolkata';
     const result = await this.userProgressRepository
       .createQueryBuilder('progress')
       .select([
-        'DATE(progress.updatedAt) as date',
+        `DATE(timezone('${timezone}', progress.updatedAt)) as date`,
         'AVG(progress.progress) as avgProgress',
       ])
       .where('progress.userId = :userId', { userId })
-      .andWhere("progress.updatedAt >= NOW() - INTERVAL '7 days'")
+      .andWhere(
+        `timezone('${timezone}', progress.updatedAt) >= timezone('${timezone}', NOW()) - INTERVAL '6 days'`,
+      )
       .groupBy('date')
       .orderBy('date', 'ASC')
       .getRawMany();
 
-    // 🔥 format for chart
-    return result.map((item) => ({
-      day: new Date(item.date).toLocaleDateString('en-US', {
-        weekday: 'short',
-      }),
-      progress: Math.round(item.avgProgress),
-    }));
+    const progressByDate = new Map(
+      result.map((item) => [
+        item.date,
+        Math.round(Number(item.avgProgress) || 0),
+      ]),
+    );
+
+    const days: WeeklyProgress[] = [];
+    const today = new Date();
+
+    for (let offset = 6; offset >= 0; offset--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - offset);
+
+      const formattedDate = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      }).format(date);
+
+      days.push({
+        day: new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          weekday: 'short',
+        }).format(date),
+        progress: progressByDate.get(formattedDate) ?? 0,
+      });
+    }
+
+    return days;
   }
 }

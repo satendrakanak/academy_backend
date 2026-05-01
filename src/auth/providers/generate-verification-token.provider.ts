@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { VerificationTokenService } from './verification-token.service';
 import { GenerateVerficationTokenDto } from '../dtos/generate-verfification-token.dto';
 import { randomUUID } from 'crypto';
+import { TokenType } from '../enums/token-type.enum';
 
 @Injectable()
 export class GenerateVerificationTokenProvider {
@@ -13,7 +14,16 @@ export class GenerateVerificationTokenProvider {
   ) {}
 
   async generate(generateVerficationTokenDto: GenerateVerficationTokenDto) {
-    const token = randomUUID();
+    await this.verificationTokenService.deletePendingTokensForUser(
+      generateVerficationTokenDto.userId,
+      generateVerficationTokenDto.type,
+    );
+
+    const token =
+      generateVerficationTokenDto.type === TokenType.CHECKOUT_EMAIL_OTP ||
+      generateVerficationTokenDto.type === TokenType.EMAIL_OTP_VERIFICATION
+        ? Math.floor(100000 + Math.random() * 900000).toString()
+        : randomUUID();
 
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 

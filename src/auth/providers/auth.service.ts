@@ -88,6 +88,19 @@ export class AuthService {
     );
   }
 
+  async sendCheckoutVerificationOtp(user: User) {
+    const tokenRecord = await this.generateVerificationTokenProvider.generate({
+      userId: user.id,
+      type: TokenType.CHECKOUT_EMAIL_OTP,
+    });
+
+    await this.mailService.sendCheckoutOtpEmail(
+      user,
+      tokenRecord.token,
+      tokenRecord.expiresAt,
+    );
+  }
+
   async forgotPassword(email: string) {
     return await this.forgotPasswordProvider.forgotPassword(email);
   }

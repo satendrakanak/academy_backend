@@ -23,6 +23,7 @@ export class GenerateUsernameProvider {
     while (true) {
       const existing = await this.userRepository.findOne({
         where: { username },
+        withDeleted: true,
       });
 
       if (!existing) {

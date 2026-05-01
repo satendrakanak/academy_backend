@@ -39,6 +39,13 @@ import { RolesPermissionsModule } from './roles-permissions/roles-permissions.mo
 import { ProfilesModule } from './profiles/profiles.module';
 import { ArticlesModule } from './articles/articles.module';
 import { TestimonialsModule } from './testimonials/testimonials.module';
+import { CertificatesModule } from './certificates/certificates.module';
+import { CourseReviewsModule } from './course-reviews/course-reviews.module';
+import { ArticleCommentsModule } from './article-comments/article-comments.module';
+import { CourseQaModule } from './course-qa/course-qa.module';
+import { CartsModule } from './carts/carts.module';
+import { FacultyReviewsModule } from './faculty-reviews/faculty-reviews.module';
+import { ContactLeadsModule } from './contact-leads/contact-leads.module';
 
 const ENV = process.env.NODE_ENV;
 
@@ -101,6 +108,13 @@ const ENV = process.env.NODE_ENV;
     ProfilesModule,
     ArticlesModule,
     TestimonialsModule,
+    CertificatesModule,
+    CourseReviewsModule,
+    ArticleCommentsModule,
+    CourseQaModule,
+    CartsModule,
+    FacultyReviewsModule,
+    ContactLeadsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -31,6 +31,7 @@ export class FindOneByIdProvider {
         relations: [
           'profile',
           'roles',
+          'roles.permissions',
           'avatar',
           'coverImage',
           'facultyProfile',

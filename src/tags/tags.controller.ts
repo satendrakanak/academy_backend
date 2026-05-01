@@ -14,6 +14,8 @@ import type { ActiveUserData } from 'src/auth/interfaces/active-user-data.interf
 import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import { CreateManyTagsDto } from './dtos/create-many-tags.dto';
 import { PatchTagDto } from './dtos/patch-tag.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('tags')
 export class TagsController {
@@ -25,12 +27,14 @@ export class TagsController {
     private readonly tagsService: TagsService,
   ) {}
 
+  @Auth(AuthType.None)
   @Get()
   async findAll() {
     const result = await this.tagsService.findAll();
     return result;
   }
 
+  @Auth(AuthType.None)
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return await this.tagsService.findOne(id);

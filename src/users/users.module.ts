@@ -25,11 +25,11 @@ import { GenerateUsernameProvider } from './providers/generate-username.provider
 import { ChangePasswordProvider } from './providers/change-password.provider';
 import { GetDashboardStatsProvider } from './providers/get-dashboard-stats.provider';
 import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
-import { UserProgressModule } from 'src/user-progress/user-progress.module';
+import { UserProgres } from 'src/user-progress/user-progres.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, UserProgres]),
     forwardRef(() => AuthModule),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),
@@ -37,7 +37,6 @@ import { UserProgressModule } from 'src/user-progress/user-progress.module';
     RolesPermissionsModule,
     forwardRef(() => ProfilesModule),
     EnrollmentsModule,
-    UserProgressModule,
   ],
   controllers: [UsersController],
   providers: [

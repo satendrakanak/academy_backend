@@ -21,6 +21,8 @@ import { ActiveUser } from 'src/auth/decorators/active-user.decorator';
 import type { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { AutoApplyCouponDto } from './dtos/auto-apply-coupon.dto';
 import { AutoApplyBulkCouponDto } from './dtos/auto-apply-bulk.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { AuthType } from 'src/auth/enums/auth-type.enum';
 
 @Controller('coupons')
 export class CouponsController {
@@ -59,12 +61,13 @@ export class CouponsController {
     return await this.couponsService.delete(id);
   }
 
+  @Auth(AuthType.Optional)
   @Post('apply')
   async applyCoupon(
     @Body() applyCouponDto: ApplyCouponDto,
     @ActiveUser() user: ActiveUserData,
   ) {
-    const userId = user.sub;
+    const userId = user?.sub;
 
     return this.couponsService.applyCoupon(
       userId,
@@ -74,12 +77,13 @@ export class CouponsController {
     );
   }
 
+  @Auth(AuthType.Optional)
   @Post('auto-apply')
   async autoApply(
     @Body() autoApplyCouponDto: AutoApplyCouponDto,
     @ActiveUser() user: ActiveUserData,
   ) {
-    const userId = user.sub;
+    const userId = user?.sub;
 
     return this.couponsService.autoApplyCoupon(
       userId,
@@ -87,12 +91,13 @@ export class CouponsController {
       autoApplyCouponDto.courseIds,
     );
   }
+  @Auth(AuthType.Optional)
   @Post('auto-apply-bulk')
   async autoApplyBulk(
     @Body() autoApplyBulkCouponDto: AutoApplyBulkCouponDto,
     @ActiveUser() user: ActiveUserData,
   ) {
-    const userId = user.sub;
+    const userId = user?.sub;
 
     const data = await this.couponsService.autoApplyBulk(
       userId,

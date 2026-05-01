@@ -24,4 +24,19 @@ export class UpdateFacultyProfileDto {
   @IsOptional()
   @Transform(({ value }) => (value === '' ? undefined : value))
   linkedin!: string;
+
+  @IsUrl()
+  @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  instagram!: string;
+
+  @IsUrl()
+  @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  twitter!: string;
+
+  @IsUrl()
+  @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
+  youtube!: string;
 }

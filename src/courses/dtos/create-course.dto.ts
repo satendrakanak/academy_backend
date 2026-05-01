@@ -9,7 +9,18 @@ import {
   Matches,
   IsInt,
   IsArray,
+  ValidateNested,
 } from 'class-validator';
+
+class CourseFaqItemDto {
+  @IsString()
+  @IsNotEmpty()
+  question!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  answer!: string;
+}
 
 export class CreateCourseDto {
   @IsString()
@@ -143,4 +154,10 @@ export class CreateCourseDto {
   @IsBoolean()
   @IsOptional()
   isFeatured?: boolean;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CourseFaqItemDto)
+  faqs?: CourseFaqItemDto[];
 }

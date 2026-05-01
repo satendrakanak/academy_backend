@@ -8,7 +8,7 @@ export class AutoApplyBulkCouponProvider {
   ) {}
 
   async autoApplyBulk(
-    userId: number,
+    userId: number | undefined,
     courses: { id: number; price: number }[],
   ) {
     const result: Record<
