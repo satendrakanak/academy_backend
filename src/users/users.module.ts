@@ -25,11 +25,20 @@ import { GenerateUsernameProvider } from './providers/generate-username.provider
 import { ChangePasswordProvider } from './providers/change-password.provider';
 import { GetDashboardStatsProvider } from './providers/get-dashboard-stats.provider';
 import { EnrollmentsModule } from 'src/enrollments/enrollments.module';
+import { Certificate } from 'src/certificates/certificate.entity';
+import { CourseExamAttempt } from 'src/course-exams/course-exam-attempt.entity';
+import { Enrollment } from 'src/enrollments/enrollment.entity';
 import { UserProgres } from 'src/user-progress/user-progres.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserProgres]),
+    TypeOrmModule.forFeature([
+      User,
+      UserProgres,
+      CourseExamAttempt,
+      Certificate,
+      Enrollment,
+    ]),
     forwardRef(() => AuthModule),
     ConfigModule.forFeature(jwtConfig),
     JwtModule.registerAsync(jwtConfig.asProvider()),

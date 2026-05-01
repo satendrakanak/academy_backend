@@ -57,6 +57,14 @@ export class UsersController {
     return await this.usersService.getFacultyProfile(id);
   }
 
+  @Auth(AuthType.None)
+  @Get('public-profile/:username')
+  public async getPublicProfile(
+    @Param('username') username: string,
+  ) {
+    return await this.usersService.getPublicProfileBundle(username);
+  }
+
   @Get('dashboard-stats/:id')
   getDashboardStats(@Param('id', ParseIntPipe) id: number) {
     return this.usersService.getDashboardStats(id);

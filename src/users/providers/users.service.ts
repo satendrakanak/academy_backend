@@ -37,6 +37,9 @@ import { UpdateFacultyProfileDto } from 'src/profiles/dtos/update.faculty-profil
 import { ActiveUserData } from 'src/auth/interfaces/active-user-data.interface';
 import { Brackets } from 'typeorm';
 import { CreateUserOptions } from '../interfaces/create-user-options.interface';
+import { Enrollment } from 'src/enrollments/enrollment.entity';
+import { Certificate } from 'src/certificates/certificate.entity';
+import { CourseExamAttempt } from 'src/course-exams/course-exam-attempt.entity';
 
 @Injectable()
 export class UsersService {
@@ -47,6 +50,15 @@ export class UsersService {
 
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
+    @InjectRepository(Enrollment)
+    private readonly enrollmentRepository: Repository<Enrollment>,
+
+    @InjectRepository(Certificate)
+    private readonly certificateRepository: Repository<Certificate>,
+
+    @InjectRepository(CourseExamAttempt)
+    private readonly courseExamAttemptRepository: Repository<CourseExamAttempt>,
 
     /**
      * Inject createUserProvider
@@ -226,6 +238,121 @@ export class UsersService {
       where: { username },
       relations: ['profile'],
     });
+  }
+
+  async getPublicProfileBundle(username: string) {
+    const user = await this.userRepository.findOne({
+      where: { username },
+      relations: [
+        'profile',
+        'roles',
+        'avatar',
+        'coverImage',
+        'facultyProfile',
+        'taughtCourses',
+        'taughtCourses.image',
+        'taughtCourses.faculties',
+        'taughtCourses.faculties.avatar',
+      ],
+    });
+
+    if (!user?.profile?.isPublic) {
+      return null;
+    }
+
+    const mappedUser = this.mediaFileMappingService.mapUser(user);
+    mappedUser.taughtCourses =
+      mappedUser.taughtCourses?.map((course) =>
+        this.mediaFileMappingService.mapCourse(course),
+      ) || [];
+
+    const [stats, weeklyProgress, certificates, examAttempts, enrollments] =
+      await Promise.all([
+        this.getDashboardStatsProvider.getDashboardStats(user.id),
+        this.getDashboardStatsProvider.getWeeklyProgress(user.id),
+        user.profile.showCertificates
+          ? this.certificateRepository.find({
+              where: { user: { id: user.id } },
+              relations: ['course'],
+              order: { issuedAt: 'DESC' },
+            })
+          : Promise.resolve([]),
+        this.courseExamAttemptRepository.find({
+          where: { user: { id: user.id } },
+          relations: ['course'],
+          order: { submittedAt: 'DESC', createdAt: 'DESC' },
+        }),
+        user.profile.showCourses
+          ? this.enrollmentRepository.find({
+              where: { user: { id: user.id }, isActive: true },
+              relations: ['course', 'course.image', 'course.faculties', 'course.faculties.avatar'],
+              order: { enrolledAt: 'DESC' },
+            })
+          : Promise.resolve([]),
+      ]);
+
+    const examMap = new Map<
+      number,
+      {
+        courseId: number;
+        courseTitle: string;
+        courseSlug: string;
+        attempts: number;
+        bestPercentage: number;
+        latestPercentage: number;
+        passed: boolean;
+      }
+    >();
+
+    for (const attempt of examAttempts) {
+      const existing = examMap.get(attempt.course.id);
+      const percentage = Number(attempt.percentage || 0);
+
+      if (!existing) {
+        examMap.set(attempt.course.id, {
+          courseId: attempt.course.id,
+          courseTitle: attempt.course.title,
+          courseSlug: attempt.course.slug,
+          attempts: 1,
+          bestPercentage: percentage,
+          latestPercentage: percentage,
+          passed: attempt.passed,
+        });
+        continue;
+      }
+
+      existing.attempts += 1;
+      existing.bestPercentage = Math.max(existing.bestPercentage, percentage);
+      existing.passed = existing.passed || attempt.passed;
+    }
+
+    return {
+      user: mappedUser,
+      stats,
+      weeklyProgress,
+      courses: enrollments.map((enrollment) =>
+        this.mediaFileMappingService.mapCourse({
+          ...enrollment.course,
+          isEnrolled: true,
+          progress: {
+            isCompleted: enrollment.progress >= 100,
+            progress: Math.round(enrollment.progress || 0),
+            lastTime: 0,
+          },
+        } as any),
+      ),
+      certificates: certificates.map((certificate) => ({
+        id: certificate.id,
+        certificateNumber: certificate.certificateNumber,
+        issuedAt: certificate.issuedAt,
+        course: {
+          id: certificate.course.id,
+          title: certificate.course.title,
+          slug: certificate.course.slug,
+        },
+      })),
+      examHistory: Array.from(examMap.values()),
+    };
   }
 
   public async create(

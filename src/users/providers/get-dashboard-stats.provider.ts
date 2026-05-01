@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Certificate } from 'src/certificates/certificate.entity';
+import { CourseExamAttempt } from 'src/course-exams/course-exam-attempt.entity';
 import { EnrollmentsService } from 'src/enrollments/providers/enrollments.service';
 import { WeeklyProgress } from 'src/user-progress/interfaces/weekly-progress.interface';
 import { UserProgres } from 'src/user-progress/user-progres.entity';
@@ -19,19 +21,40 @@ export class GetDashboardStatsProvider {
      */
     @InjectRepository(UserProgres)
     private readonly userProgressRepository: Repository<UserProgres>,
+
+    @InjectRepository(CourseExamAttempt)
+    private readonly courseExamAttemptRepository: Repository<CourseExamAttempt>,
+
+    @InjectRepository(Certificate)
+    private readonly certificateRepository: Repository<Certificate>,
   ) {}
 
   async getDashboardStats(userId: number) {
-    const [courses, completed, progress] = await Promise.all([
+    const [
+      courses,
+      completed,
+      progress,
+      examsTaken,
+      examsPassed,
+      certificatesEarned,
+    ] = await Promise.all([
       this.enrollmentsService.getUserCourseCount(userId),
       this.getCompletedCoursesCount(userId),
       this.getAverageProgress(userId),
+      this.courseExamAttemptRepository.count({ where: { user: { id: userId } } }),
+      this.courseExamAttemptRepository.count({
+        where: { user: { id: userId }, passed: true },
+      }),
+      this.certificateRepository.count({ where: { user: { id: userId } } }),
     ]);
 
     return {
       courses,
       completed,
       progress,
+      examsTaken,
+      examsPassed,
+      certificatesEarned,
     };
   }
 
