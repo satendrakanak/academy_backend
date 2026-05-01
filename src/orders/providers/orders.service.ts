@@ -198,11 +198,15 @@ export class OrdersService {
   }
 
   async findUserOrders(userId: number) {
-    return this.orderRepository.find({
+    const orders = await this.orderRepository.find({
       where: { user: { id: userId } },
-      relations: ['items', 'items.course'],
+      relations: ['items', 'items.course', 'items.course.image', 'user'],
       order: { createdAt: 'DESC' },
     });
+
+    return Promise.all(
+      orders.map((order) => this.mediaFileMappingService.mapOrder(order)),
+    );
   }
 
   async handleWebhook(rawBody: Buffer, signature: string) {

@@ -36,24 +36,54 @@ export class GetDashboardStatsProvider {
   }
 
   async getWeeklyProgress(userId: number): Promise<WeeklyProgress[]> {
+    const timezone = 'Asia/Kolkata';
     const result = await this.userProgressRepository
       .createQueryBuilder('progress')
       .select([
-        'DATE(progress.updatedAt) as date',
+        `DATE(timezone('${timezone}', progress.updatedAt)) as date`,
         'AVG(progress.progress) as avgProgress',
       ])
       .where('progress.userId = :userId', { userId })
-      .andWhere("progress.updatedAt >= NOW() - INTERVAL '7 days'")
+      .andWhere(
+        `timezone('${timezone}', progress.updatedAt) >= timezone('${timezone}', NOW()) - INTERVAL '6 days'`,
+      )
       .groupBy('date')
       .orderBy('date', 'ASC')
       .getRawMany();
 
-    return result.map((item) => ({
-      day: new Date(item.date).toLocaleDateString('en-US', {
-        weekday: 'short',
-      }),
-      progress: Math.round(item.avgProgress),
-    }));
+    const progressByDate = new Map(
+      result.map((item) => [
+        item.date,
+        Math.round(Number(item.avgProgress) || 0),
+      ]),
+    );
+
+    const days: WeeklyProgress[] = [];
+    const today = new Date();
+
+    for (let offset = 6; offset >= 0; offset--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - offset);
+
+      const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+      });
+
+      const formattedDate = formatter.format(date);
+
+      days.push({
+        day: new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          weekday: 'short',
+        }).format(date),
+        progress: progressByDate.get(formattedDate) ?? 0,
+      });
+    }
+
+    return days;
   }
 
   private async getCompletedCoursesCount(userId: number): Promise<number> {
