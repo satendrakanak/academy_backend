@@ -59,7 +59,7 @@ export class EnrollmentsService {
 
   async getUserCourseCount(userId: number): Promise<number> {
     return this.enrollmentRepository.count({
-      where: { user: { id: userId } },
+      where: { user: { id: userId }, isActive: true },
     });
   }
 

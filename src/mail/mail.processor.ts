@@ -1,6 +1,5 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
-import { MailerService } from '@nestjs-modules/mailer';
 import { SendEmailJobData } from './interfaces/send-mail-options.interface';
 import { Logger } from '@nestjs/common';
 import { SettingsService } from 'src/settings/providers/settings.service';
@@ -10,10 +9,7 @@ import nodemailer from 'nodemailer';
 export class MailProcessor extends WorkerHost {
   private readonly logger = new Logger(MailProcessor.name);
 
-  constructor(
-    private readonly mailerService: MailerService,
-    private readonly settingsService: SettingsService,
-  ) {
+  constructor(private readonly settingsService: SettingsService) {
     super();
   }
 
@@ -26,37 +22,32 @@ export class MailProcessor extends WorkerHost {
           await this.settingsService.getEmailSettingsForSending();
 
         if (
-          emailSettings.isEnabled &&
-          emailSettings.smtpHost &&
-          emailSettings.smtpUser &&
-          emailSettings.smtpPassword
+          !emailSettings.isEnabled ||
+          !emailSettings.smtpHost ||
+          !emailSettings.smtpUser ||
+          !emailSettings.smtpPassword
         ) {
-          const transporter = nodemailer.createTransport({
-            host: emailSettings.smtpHost,
-            port: Number(emailSettings.smtpPort || 587),
-            secure: Boolean(emailSettings.secure),
-            auth: {
-              user: emailSettings.smtpUser,
-              pass: emailSettings.smtpPassword,
-            },
-          });
-
-          await transporter.sendMail({
-            to,
-            subject,
-            html,
-            attachments,
-            from: `${emailSettings.fromName} <${emailSettings.fromEmail}>`,
-            replyTo: emailSettings.replyToEmail || undefined,
-          });
-        } else {
-          await this.mailerService.sendMail({
-            to,
-            subject,
-            html,
-            attachments,
-          });
+          throw new Error('Email settings are not configured or disabled.');
         }
+
+        const transporter = nodemailer.createTransport({
+          host: emailSettings.smtpHost,
+          port: Number(emailSettings.smtpPort || 587),
+          secure: Boolean(emailSettings.secure),
+          auth: {
+            user: emailSettings.smtpUser?.trim(),
+            pass: emailSettings.smtpPassword?.trim(),
+          },
+        });
+
+        await transporter.sendMail({
+          to,
+          subject,
+          html,
+          attachments,
+          from: `${emailSettings.fromName} <${emailSettings.fromEmail}>`,
+          replyTo: emailSettings.replyToEmail || undefined,
+        });
 
         this.logger.log(`✅ Email sent to ${to}`);
       }

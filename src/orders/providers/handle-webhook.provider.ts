@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { SettingsService } from 'src/settings/providers/settings.service';
 import { PaymentProvider } from 'src/settings/enums/payment-provider.enum';
 import * as crypto from 'crypto';
@@ -78,6 +73,13 @@ export class HandleWebhookProvider {
           order.id,
           razorpayOrderId,
           paymentId,
+          {
+            method: payment.method || null,
+            bank: payment.bank || null,
+            wallet: payment.wallet || null,
+            vpa: payment.vpa || null,
+            cardId: payment.card_id || null,
+          },
         );
         break;
 
@@ -86,6 +88,15 @@ export class HandleWebhookProvider {
           order.id,
           razorpayOrderId,
           paymentId,
+          {
+            method: payment.method || null,
+            bank: payment.bank || null,
+            wallet: payment.wallet || null,
+            vpa: payment.vpa || null,
+            cardId: payment.card_id || null,
+            errorCode: payment.error_code || null,
+            errorDescription: payment.error_description || null,
+          },
         );
         break;
 

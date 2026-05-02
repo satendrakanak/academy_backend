@@ -4,6 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
+import Razorpay from 'razorpay';
 import { Order } from '../order.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateOrderDto } from '../dtos/create-order.dto';
@@ -20,6 +21,7 @@ import { RetryPaymentProvider } from './retry-payment.provider';
 import { CouponsService } from 'src/coupons/providers/coupons.service';
 import { MediaFileMappingService } from 'src/common/media-file-mapping/providers/media-file-mapping.service';
 import { UpdateOrderStatusByAdminProvider } from './update-order-status-by-admin.provider';
+import { FailedPaymentDetails } from '../interfaces/failed-payment-details.interface';
 
 @Injectable()
 export class OrdersService {
@@ -138,9 +140,14 @@ export class OrdersService {
   }
 
   async verifyPayment(verifyPaymentDto: VerifyPaymentDto) {
-    const { keySecret } = await this.settingsService.getActiveGateway(
+    const { keyId, keySecret } = await this.settingsService.getActiveGateway(
       PaymentProvider.RAZORPAY,
     );
+
+    const razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
 
     const body =
       verifyPaymentDto.razorpay_order_id +
@@ -155,6 +162,10 @@ export class OrdersService {
     if (expected !== verifyPaymentDto.razorpay_signature) {
       throw new BadRequestException('Invalid signature');
     }
+
+    const payment = await razorpay.payments.fetch(
+      verifyPaymentDto.razorpay_payment_id,
+    );
 
     const order = await this.orderRepository.findOne({
       where: {
@@ -176,6 +187,13 @@ export class OrdersService {
       order.id,
       verifyPaymentDto.razorpay_order_id,
       verifyPaymentDto.razorpay_payment_id,
+      {
+        method: payment.method,
+        bank: payment.bank,
+        wallet: payment.wallet,
+        vpa: payment.vpa,
+        cardId: payment.card_id,
+      },
     );
 
     // 🔥 7. Mark coupon used
@@ -223,7 +241,33 @@ export class OrdersService {
       throw new BadRequestException('Paid order cannot be marked as failed');
     }
 
-    order.paymentId = paymentId || order.paymentId;
+    let paymentDetails: FailedPaymentDetails | undefined;
+    let finalPaymentId = paymentId || order.paymentId || null;
+
+    if (finalPaymentId) {
+      const { keyId, keySecret } = await this.settingsService.getActiveGateway(
+        PaymentProvider.RAZORPAY,
+      );
+
+      const razorpay = new Razorpay({
+        key_id: keyId,
+        key_secret: keySecret,
+      });
+
+      const payment = await razorpay.payments.fetch(finalPaymentId);
+
+      paymentDetails = {
+        method: payment.method || null,
+        bank: payment.bank || null,
+        wallet: payment.wallet || null,
+        vpa: payment.vpa || null,
+        cardId: payment.card_id || null,
+        errorCode: payment.error_code || null,
+        errorDescription: payment.error_description || null,
+      };
+    }
+
+    order.paymentId = finalPaymentId;
 
     await this.orderRepository.save(order);
 
@@ -231,6 +275,7 @@ export class OrdersService {
       order.id,
       order.orderId!,
       order.paymentId || 'FAILED',
+      paymentDetails,
     );
   }
 

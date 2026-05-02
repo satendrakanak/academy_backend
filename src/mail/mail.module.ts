@@ -1,7 +1,5 @@
 import { Global, Module } from '@nestjs/common';
 import { MailService } from './providers/mail.service';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 import { MailProcessor } from './mail.processor';
 import { SendWelcomeEmailProvider } from './providers/send-welcome-email.provider';
@@ -16,28 +14,6 @@ import { SettingsModule } from 'src/settings/settings.module';
 @Global()
 @Module({
   imports: [
-    MailerModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
-        return {
-          transport: {
-            host: config.get<string>('appConfig.smtpHost'),
-            port: Number(config.get<number>('appConfig.smtpPort')),
-            secure:
-              config.get<string>('appConfig.smtpMailEncryption') === 'true',
-            auth: {
-              user: config.get<string>('appConfig.smtpUser'),
-              pass: config.get<string>('appConfig.smtpPassword'),
-            },
-          },
-          defaults: {
-            from: `${config.get<string>(
-              'appConfig.smtpFromName',
-            )} <${config.get<string>('appConfig.smtpFromEmail')}>`,
-          },
-        };
-      },
-    }),
     BullModule.registerQueue({
       name: 'mail',
     }),

@@ -36,7 +36,7 @@ export class GetEnrolledCoursesProvider {
     const courses = await this.courseRepository.find({
       where: {
         isPublished: true,
-        enrollments: { user: { id: userId } },
+        enrollments: { user: { id: userId }, isActive: true },
       },
       relations: [
         'createdBy',

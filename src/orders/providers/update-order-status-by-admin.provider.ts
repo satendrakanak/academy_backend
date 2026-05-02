@@ -72,7 +72,10 @@ export class UpdateOrderStatusByAdminProvider {
       await this.orderEmailProvider.sendOrderCancelledEmail(savedOrder);
     }
 
-    if (status === OrderStatus.FAILED && previousStatus !== OrderStatus.FAILED) {
+    if (
+      status === OrderStatus.FAILED &&
+      previousStatus !== OrderStatus.FAILED
+    ) {
       await this.orderEmailProvider.sendPaymentFailedEmail(savedOrder);
     }
 

@@ -787,6 +787,7 @@ const invoiceTemplate = `
         <div class="muted">
           {{customerName}}<br/>
           {{customerEmail}}<br/>
+          {{customerPhoneNumber}}<br/>
           {{billingAddress}}
         </div>
       </div>
@@ -795,8 +796,10 @@ const invoiceTemplate = `
         <div class="box-title">Payment Details</div>
         <div class="muted">
           <strong>Payment Method:</strong> {{paymentMethod}}<br/>
-          <strong>Payment ID:</strong> {{paymentId}}<br/>
-          <strong>Order ID:</strong> {{gatewayOrderId}}
+          <strong>Payment Mode:</strong> {{paymentMode}}<br/>
+          <strong>Paid At:</strong> {{paidAt}}<br/>
+          <strong>Transaction ID:</strong> {{paymentId}}<br/>
+          <strong>Gateway Order ID:</strong> {{gatewayOrderId}}
         </div>
       </div>
     </div>

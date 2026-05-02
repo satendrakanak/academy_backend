@@ -165,7 +165,8 @@ export class OrderEmailProvider {
       discount: this.formatCurrency(order.discount),
       tax: this.formatCurrency(order.tax),
       courseCount: String(order.items.length),
-      billingName: `${order.billingAddress.firstName} ${order.billingAddress.lastName}`.trim(),
+      billingName:
+        `${order.billingAddress.firstName} ${order.billingAddress.lastName}`.trim(),
       billingEmail: order.billingAddress.email,
       billingPhone: order.billingAddress.phoneNumber,
       billingAddress: [
@@ -183,13 +184,16 @@ export class OrderEmailProvider {
   }
 
   private getUserName(order: Order) {
-    return [order.user.firstName, order.user.lastName]
-      .filter(Boolean)
-      .join(' ')
-      .trim() || [order.billingAddress.firstName, order.billingAddress.lastName]
-      .filter(Boolean)
-      .join(' ')
-      .trim();
+    return (
+      [order.user.firstName, order.user.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim() ||
+      [order.billingAddress.firstName, order.billingAddress.lastName]
+        .filter(Boolean)
+        .join(' ')
+        .trim()
+    );
   }
 
   private getCoursesListMarkup(order: Order) {
@@ -249,7 +253,10 @@ export class OrderEmailProvider {
   }
 
   private getFrontendUrl() {
-    return this.configService.get<string>('appConfig.fronEndUrl') || 'http://localhost:3000';
+    return (
+      this.configService.get<string>('appConfig.fronEndUrl') ||
+      'http://localhost:3000'
+    );
   }
 
   private formatCurrency(value: number | string) {

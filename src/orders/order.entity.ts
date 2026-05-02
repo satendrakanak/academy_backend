@@ -67,6 +67,27 @@ export class Order {
   @Column({ type: 'varchar', length: 50, nullable: true })
   paymentMethod?: string | null;
 
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  paymentMode?: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  paymentBank?: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  paymentWallet?: string | null;
+
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  paymentVpa?: string | null;
+
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  paymentCardId?: string | null;
+
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  paymentErrorCode?: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  paymentErrorMessage?: string | null;
+
   @Column({
     type: 'enum',
     enum: OrderStatus,

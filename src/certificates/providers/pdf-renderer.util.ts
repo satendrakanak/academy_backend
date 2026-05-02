@@ -3,6 +3,39 @@ import { User } from 'src/users/user.entity';
 import { Course } from 'src/courses/course.entity';
 import { renderPdf } from '../utils/pdf-renderer';
 
+function formatBillingAddress(
+  billingAddress?: Order['billingAddress'] | null,
+): string {
+  if (!billingAddress) return 'Billing address not available';
+
+  return [
+    billingAddress.address,
+    billingAddress.city,
+    billingAddress.state,
+    billingAddress.country,
+    billingAddress.pincode,
+  ]
+    .filter(Boolean)
+    .join(', ');
+}
+
+function formatPaymentMode(order: Order): string {
+  if (order.paymentMode === 'upi') return 'UPI';
+
+  if (order.paymentMode === 'card') return 'Card';
+
+  if (order.paymentMode === 'netbanking') {
+    return order.paymentBank
+      ? `Net Banking (${order.paymentBank})`
+      : 'Net Banking';
+  }
+
+  if (order.paymentMode === 'wallet') {
+    return order.paymentWallet ? `Wallet (${order.paymentWallet})` : 'Wallet';
+  }
+
+  return order.paymentMode || 'N/A';
+}
 export async function renderInvoicePdf(order: Order) {
   const items = order.items.map((item) => {
     const quantity = Number(item.quantity || 1);
@@ -22,13 +55,27 @@ export async function renderInvoicePdf(order: Order) {
   const tax = Number(order.tax || 0);
   const totalAmount = Number(order.totalAmount || 0);
 
+  const billingAddress = order.billingAddress;
+  const customerName =
+    [billingAddress?.firstName, billingAddress?.lastName]
+      .filter(Boolean)
+      .join(' ')
+      .trim() ||
+    [order.user?.firstName, order.user?.lastName]
+      .filter(Boolean)
+      .join(' ')
+      .trim() ||
+    'Customer';
+
+  const customerEmail = billingAddress?.email || order.user?.email || '';
+  const customerPhoneNumber =
+    billingAddress?.phoneNumber || order.user?.phoneNumber || '';
+
   return renderPdf('invoice', {
     orderId: order.id,
-
     invoiceNumber: `INV-${new Date(order.createdAt).getFullYear()}-${String(
       order.id,
     ).padStart(6, '0')}`,
-
     issuedAt: new Date(order.paidAt || order.updatedAt).toLocaleDateString(
       'en-IN',
       {
@@ -37,28 +84,29 @@ export async function renderInvoicePdf(order: Order) {
         year: 'numeric',
       },
     ),
-
-    customerName:
-      [order.user?.firstName, order.user?.lastName]
-        .filter(Boolean)
-        .join(' ')
-        .trim() || 'Customer',
-
-    customerEmail: order.user?.email || '',
-
-    billingAddress: order.billingAddress || 'Billing address not available',
-
+    customerName,
+    customerEmail,
+    customerPhoneNumber,
+    billingAddress: formatBillingAddress(order.billingAddress),
     paymentMethod: order.paymentMethod || 'Online Payment',
+    paymentMode: formatPaymentMode(order),
     paymentId: order.paymentId || 'N/A',
     gatewayOrderId: order.orderId || 'N/A',
-
+    paidAt: order.paidAt
+      ? new Date(order.paidAt).toLocaleString('en-IN', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true,
+        })
+      : 'N/A',
     items,
-
     subTotal: subTotal.toFixed(2),
     discount: discount.toFixed(2),
     tax: tax.toFixed(2),
     totalAmount: totalAmount.toFixed(2),
-
     amountInWords: amountToWords(totalAmount),
   });
 }

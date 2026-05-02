@@ -7,6 +7,8 @@ import { EnrollmentsService } from 'src/enrollments/providers/enrollments.servic
 import { CouponsService } from 'src/coupons/providers/coupons.service';
 import { OrderEmailProvider } from './email/order-email.provider';
 import { CartsService } from 'src/carts/providers/carts.service';
+import { PaymentDetails } from '../interfaces/payment-details.interface';
+import { FailedPaymentDetails } from '../interfaces/failed-payment-details.interface';
 
 @Injectable()
 export class ChangeOrderStatusProvider {
@@ -36,6 +38,7 @@ export class ChangeOrderStatusProvider {
     orderId: number,
     razorpayOrderId: string,
     paymentId: string,
+    paymentDetails?: PaymentDetails,
   ) {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, orderId: razorpayOrderId },
@@ -49,6 +52,12 @@ export class ChangeOrderStatusProvider {
     order.status = OrderStatus.PAID;
     order.paymentId = paymentId;
     order.paidAt = new Date();
+    order.paymentMethod = 'RAZORPAY';
+    order.paymentMode = paymentDetails?.method || null;
+    order.paymentBank = paymentDetails?.bank || null;
+    order.paymentWallet = paymentDetails?.wallet || null;
+    order.paymentVpa = paymentDetails?.vpa || null;
+    order.paymentCardId = paymentDetails?.cardId || null;
 
     await this.orderRepository.save(order);
 
@@ -97,6 +106,7 @@ export class ChangeOrderStatusProvider {
     orderId: number,
     razorpayOrderId: string,
     paymentId: string,
+    paymentDetails?: FailedPaymentDetails,
   ) {
     const order = await this.orderRepository.findOne({
       where: { id: orderId, orderId: razorpayOrderId },
@@ -110,6 +120,14 @@ export class ChangeOrderStatusProvider {
     order.status = OrderStatus.FAILED;
     order.paymentId = paymentId;
     order.failedAt = new Date();
+    order.paymentMode = paymentDetails?.method || null;
+    order.paymentBank = paymentDetails?.bank || null;
+    order.paymentWallet = paymentDetails?.wallet || null;
+    order.paymentVpa = paymentDetails?.vpa || null;
+    order.paymentCardId = paymentDetails?.cardId || null;
+
+    order.paymentErrorCode = paymentDetails?.errorCode || null;
+    order.paymentErrorMessage = paymentDetails?.errorDescription || null;
 
     await this.orderRepository.save(order);
 

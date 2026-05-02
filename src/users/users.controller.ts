@@ -59,9 +59,7 @@ export class UsersController {
 
   @Auth(AuthType.None)
   @Get('public-profile/:username')
-  public async getPublicProfile(
-    @Param('username') username: string,
-  ) {
+  public async getPublicProfile(@Param('username') username: string) {
     return await this.usersService.getPublicProfileBundle(username);
   }
 

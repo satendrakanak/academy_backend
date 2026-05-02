@@ -29,6 +29,7 @@ import { Certificate } from 'src/certificates/certificate.entity';
 import { CourseExamAttempt } from 'src/course-exams/course-exam-attempt.entity';
 import { Enrollment } from 'src/enrollments/enrollment.entity';
 import { UserProgres } from 'src/user-progress/user-progres.entity';
+import { Course } from 'src/courses/course.entity';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UserProgres } from 'src/user-progress/user-progres.entity';
       CourseExamAttempt,
       Certificate,
       Enrollment,
+      Course,
     ]),
     forwardRef(() => AuthModule),
     ConfigModule.forFeature(jwtConfig),

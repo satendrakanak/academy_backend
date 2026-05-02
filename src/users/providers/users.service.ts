@@ -153,7 +153,9 @@ export class UsersService {
     }
 
     if (getUsersDto.roleId) {
-      queryBuilder.andWhere('roles.id = :roleId', { roleId: getUsersDto.roleId });
+      queryBuilder.andWhere('roles.id = :roleId', {
+        roleId: getUsersDto.roleId,
+      });
     }
 
     if (getUsersDto.search?.trim()) {
@@ -285,7 +287,12 @@ export class UsersService {
         user.profile.showCourses
           ? this.enrollmentRepository.find({
               where: { user: { id: user.id }, isActive: true },
-              relations: ['course', 'course.image', 'course.faculties', 'course.faculties.avatar'],
+              relations: [
+                'course',
+                'course.image',
+                'course.faculties',
+                'course.faculties.avatar',
+              ],
               order: { enrolledAt: 'DESC' },
             })
           : Promise.resolve([]),
